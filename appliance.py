@@ -50,8 +50,8 @@ class ApplianceImageCreator(ImageCreator):
         self.__imgdir = None
         self.__format = format
         self.__disks = {}
-        #if len(disks):
-        #            self.__disks = disks
+        if len(disks):
+                    self.__disks = disks
 
     def _get_fstab(self):
         s = ""
@@ -94,7 +94,7 @@ class ApplianceImageCreator(ImageCreator):
             logging.debug("Adding disk %s as %s/disk-%s.raws" % (name, self.__imgdir, name))
             disk = SparseLoopbackDisk("%s/disk-%s.raw" % (self.__imgdir, name),
                                       devsizes[name])
-            self.__disks[name] = disk
+            #self.__disks[name] = disk
 
         self.__instloop = PartitionedMount(self.__disks,
                                            self._instroot)
@@ -289,3 +289,4 @@ class ApplianceImageCreator(ImageCreator):
                                       "-O", self.__format,  dst])
                 if rc != 0:
                     raise CreatorError("Unable to convert disk to %s" % (self.__format))
+
