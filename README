@@ -1,0 +1,6 @@
+
+This is a first cut the Appliance Creation Tool (ACT) a tool to create Appliance Images from a kick start file. This tool will use the liveCD creator API as well as patches to create a multi partitioned disk. 
+
+Directory structure:
+
+patches -> where patches to livecd creator will go
