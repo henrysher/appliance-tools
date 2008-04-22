@@ -1,8 +1,18 @@
+From 8a778f23d29aa88867709fab02a76a3d1b74fe82 Mon Sep 17 00:00:00 2001
+From: huff <dhuff@redhat.com>
+Date: Tue, 22 Apr 2008 14:20:33 -0400
+Subject: [PATCH] fs.py-kickstart.py-chages-for-mulit-partition
+
+---
+ imgcreate/fs.py        |  226 +++++++++++++++++++++++++++++++++++++++++++++++-
+ imgcreate/kickstart.py |    4 +
+ 2 files changed, 226 insertions(+), 4 deletions(-)
+
 diff --git a/imgcreate/fs.py b/imgcreate/fs.py
-index 41dec0a..fe6f76a 100644
+index 41dec0a..a62931a 100644
 --- a/imgcreate/fs.py
 +++ b/imgcreate/fs.py
-@@ -357,12 +357,228 @@ class ExtDiskMount(DiskMount):
+@@ -357,12 +357,229 @@ class ExtDiskMount(DiskMount):
  
      def resparse(self, size = None):
          self.cleanup()
@@ -18,13 +28,14 @@ index 41dec0a..fe6f76a 100644
 +    def __init__(self, disks, mountdir):
 +        Mount.__init__(self, mountdir)
 +        self.disks = {}
-+        for name in disks.keys():
-+            self.disks[name] = { 'disk': disks[name],  # Disk object
-+                                 'mapped': False, # True if kpartx mapping exists
-+                                 'numpart': 0, # Number of allocate partitions
-+                                 'partitions': [], # indexes to self.partitions
-+                                 'extended': 0, # Size of extended partition
-+                                 'offset': 0 } # Offset of next partition
++        for  item in disks:
++            for name in item.keys():
++                self.disks[name] = { 'disk': item[name],  # Disk object
++                                     'mapped': False, # True if kpartx mapping exists
++                                     'numpart': 0, # Number of allocate partitions
++                                     'partitions': [], # indexes to self.partitions
++                                     'extended': 0, # Size of extended partition
++                                     'offset': 0 } # Offset of next partition
 +        self.partitions = []
 +        self.mapped = False
 +        self.mountOrder = []
@@ -235,8 +246,13 @@ index 41dec0a..fe6f76a 100644
  
  class DeviceMapperSnapshot(object):
      def __init__(self, imgloop, cowloop):
+@@ -479,3 +696,4 @@ def create_image_minimizer(path, image, minimal_size):
+     mksquashfs(cowloop.lofile, path)
+ 
+     os.unlink(cowloop.lofile)
++
 diff --git a/imgcreate/kickstart.py b/imgcreate/kickstart.py
-index 30156d8..69fa60d 100644
+index 30156d8..a63bef5 100644
 --- a/imgcreate/kickstart.py
 +++ b/imgcreate/kickstart.py
 @@ -470,6 +470,9 @@ def get_groups(ks, required = []):
@@ -249,4 +265,11 @@ index 30156d8..69fa60d 100644
  def ignore_missing(ks):
      return ks.handler.packages.handleMissing == ksconstants.KS_MISSING_IGNORE
  
+@@ -486,3 +489,4 @@ def get_post_scripts(ks):
+ 
+ def selinux_enabled(ks):
+     return ks.handler.selinux.selinux == ksconstants.SELINUX_ENFORCING
++
+-- 
+1.5.4.1
 
