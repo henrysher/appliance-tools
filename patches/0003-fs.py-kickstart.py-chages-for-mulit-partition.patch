@@ -28,14 +28,13 @@ index 41dec0a..a62931a 100644
 +    def __init__(self, disks, mountdir):
 +        Mount.__init__(self, mountdir)
 +        self.disks = {}
-+        for  item in disks:
-+            for name in item.keys():
-+                self.disks[name] = { 'disk': item[name],  # Disk object
-+                                     'mapped': False, # True if kpartx mapping exists
-+                                     'numpart': 0, # Number of allocate partitions
-+                                     'partitions': [], # indexes to self.partitions
-+                                     'extended': 0, # Size of extended partition
-+                                     'offset': 0 } # Offset of next partition
++        for name in disks.keys():
++            self.disks[name] = { 'disk': disks[name],  # Disk object
++                                 'mapped': False, # True if kpartx mapping exists
++                                 'numpart': 0, # Number of allocate partitions
++                                 'partitions': [], # indexes to self.partitions
++                                 'extended': 0, # Size of extended partition
++                                 'offset': 0 } # Offset of next partition
 +        self.partitions = []
 +        self.mapped = False
 +        self.mountOrder = []
