@@ -1,7 +1,7 @@
-From 8a778f23d29aa88867709fab02a76a3d1b74fe82 Mon Sep 17 00:00:00 2001
+From e5ac5d59bb054c1533189af82a330264728cbc6b Mon Sep 17 00:00:00 2001
 From: huff <dhuff@redhat.com>
-Date: Tue, 22 Apr 2008 14:20:33 -0400
-Subject: [PATCH] fs.py-kickstart.py-chages-for-mulit-partition
+Date: Wed, 23 Apr 2008 12:34:32 -0400
+Subject: [PATCH] changes:
 
 ---
  imgcreate/fs.py        |  226 +++++++++++++++++++++++++++++++++++++++++++++++-
@@ -9,7 +9,7 @@ Subject: [PATCH] fs.py-kickstart.py-chages-for-mulit-partition
  2 files changed, 226 insertions(+), 4 deletions(-)
 
 diff --git a/imgcreate/fs.py b/imgcreate/fs.py
-index 41dec0a..a62931a 100644
+index 41dec0a..aaff4c3 100644
 --- a/imgcreate/fs.py
 +++ b/imgcreate/fs.py
 @@ -357,12 +357,229 @@ class ExtDiskMount(DiskMount):
@@ -35,6 +35,7 @@ index 41dec0a..a62931a 100644
 +                                 'partitions': [], # indexes to self.partitions
 +                                 'extended': 0, # Size of extended partition
 +                                 'offset': 0 } # Offset of next partition
++
 +        self.partitions = []
 +        self.mapped = False
 +        self.mountOrder = []
