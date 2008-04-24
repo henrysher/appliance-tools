@@ -4,3 +4,25 @@ This is a first cut the Appliance Creation Tool (ACT) a tool to create Appliance
 Directory structure:
 
 patches -> where patches to livecd creator will go
+
+
+Check out the code. Assume this done in $TCHOME
+cd $TCHOME
+git clone git://git.fedorahosted.org/livecd
+git clone git://git.et.redhat.com/ace.git
+git clone git://git.et.redhat.com/aos.git
+
+Patch livecd creator
+cd $TCHOME/livecd
+patch -p1 < $TCHOME/act/patches/0001-Make-use-of-python-logging-API-for-debug-messages.patch
+patch -p1 < $TCHOME/act/patches/0002-Refactor-disk-mount-classes-to-allow-multi-partition.patch
+patch -p1 < $TCHOME/act/patches/0003-fs.py-kickstart.py-chages-for-mulit-partition.patch
+
+patch -p1 < $TCHOME/act/patches/0004-edited-__init__.py-for-appliance-creator.patch
+
+cp $TCHOME/act/appliance-creator tools/
+cp $TCHOME/act/appliance.py imgcreate/
+chmod a+x tools/appliance-creator
+
+export PYTHONPATH=$TCHOME/livecd
+
