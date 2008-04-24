@@ -50,8 +50,8 @@ class ApplianceImageCreator(ImageCreator):
         self.__imgdir = None
         self.__format = format
         self.__disks = {}
-        #if len(disks):
-        #            self.__disks = disks
+        if len(disks):
+                    self.__disks = disks
 
     def _get_fstab(self):
         s = ""
@@ -78,26 +78,13 @@ class ApplianceImageCreator(ImageCreator):
 
         parts = kickstart.get_partitions(self.ks)
 
-        devsizes = {}
-        for p in parts:
-            if p.disk =="":
-                name="sda"
-            else:
-                name = p.disk
-            if not p.size:
-                raise CreatorError("No size for partition %s" % p.mountpoint)
-            if not devsizes.has_key(name):
-                devsizes[name] = 0
-            devsizes[name] += p.size
-
-        devnames = devsizes.keys()
-        devnames.sort()
-        
-        for name in devnames:
-            logging.debug("Adding disk %s as %s/disk-%s.raws" % (name, self.__imgdir, name))
-            disk = SparseLoopbackDisk("%s/disk-%s.raw" % (self.__imgdir, name),
-                                      devsizes[name])
-            self.__disks[name] = disk
+    
+        for i in range(len(self.__disks)):
+            item = self.__disks[i]
+            logging.debug("Adding disk %s as %s/disk-%s.raws" % (item['name'], self.__imgdir, item['name']))
+            disk = SparseLoopbackDisk("%s/disk-%s.raw" % (self.__imgdir, item['name']),
+                                      item['size'])
+            self.__disks[i] = disk
 
         self.__instloop = PartitionedMount(self.__disks,
                                            self._instroot)
