@@ -23,7 +23,6 @@ import shutil
 import optparse
 
 import imgcreate
-import imgcreate.debug
 import logging
 
 def parse_options(args):
@@ -38,8 +37,7 @@ def parse_options(args):
     parser.add_option("-f", "--format", type="string", dest="format",
                       help="Disk format (raw, qcow2, vmdk, ...)")
 
-    # options relating to logging
-    imgcreate.debug.add_logging_options(parser)
+    imgcreate.setup_logging(parser)
 
     (options, args) = parser.parse_args()
 
@@ -51,10 +49,6 @@ def parse_options(args):
 
 def main():
     (kscfg, options) = parse_options(sys.argv[1:])
-
-    imgcreate.debug.setup_logging(options.verbose,
-                                  options.debug,
-                                  options.logfile)
 
     if os.geteuid () != 0:
         print >> sys.stderr, "You must run appliance-creator as root"
