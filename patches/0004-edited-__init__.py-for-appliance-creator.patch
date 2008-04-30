@@ -1,26 +1,25 @@
-From 9ef92572c379741e1fd372ce2d5fadedf59812eb Mon Sep 17 00:00:00 2001
+From bcd7d95c081f13e4885b27c4a77fb13e2cbcb6ab Mon Sep 17 00:00:00 2001
 From: huff <dhuff@redhat.com>
-Date: Wed, 30 Apr 2008 17:29:10 -0400
-Subject: [PATCH] -edited-__init__.py-for-appliance-creator.patch
+Date: Wed, 30 Apr 2008 17:39:09 -0400
+Subject: [PATCH] yea2
 
 ---
- imgcreate/__init__.py |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ imgcreate/__init__.py |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/imgcreate/__init__.py b/imgcreate/__init__.py
-index bcfb40e..e89d388 100644
+index bcfb40e..10be127 100644
 --- a/imgcreate/__init__.py
 +++ b/imgcreate/__init__.py
-@@ -21,7 +21,7 @@ from imgcreate.creator import *
+@@ -21,6 +21,7 @@ from imgcreate.creator import *
  from imgcreate.yuminst import *
  from imgcreate.kickstart import *
  from imgcreate.fs import *
--from imgcreate.debug import *
 +from imgcreate.appliance import *
+ from imgcreate.debug import *
  
  """A set of classes for building Fedora system images.
- 
-@@ -29,6 +29,7 @@ The following image creators are available:
+@@ -29,6 +30,7 @@ The following image creators are available:
    - ImageCreator - installs to a directory
    - LoopImageCreator - installs to an ext3 image
    - LiveImageCreator - installs to a bootable ISO
@@ -28,7 +27,7 @@ index bcfb40e..e89d388 100644
  
  Also exported are:
    - CreatorError - all exceptions throw are of this type
-@@ -61,8 +62,9 @@ __all__ = (
+@@ -61,8 +63,10 @@ __all__ = (
      'ImageCreator',
      'LiveImageCreator',
      'LoopImageCreator',
@@ -39,6 +38,7 @@ index bcfb40e..e89d388 100644
 -    'setup_logging',
 +    'construct_name'
  )
++
 +
 -- 
 1.5.4.1
