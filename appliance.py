@@ -50,8 +50,7 @@ class ApplianceImageCreator(ImageCreator):
         self.__imgdir = None
         self.__format = format
         self.__disks = {}
-        if len(disks):
-                    self.__disks = disks
+        
 
     def _get_fstab(self):
         s = ""
@@ -75,16 +74,37 @@ class ApplianceImageCreator(ImageCreator):
     #
     def _mount_instroot(self, base_on = None):
         self.__imgdir = self._mkdtemp()
-
+        
+        #list of partitions from kickstart file
         parts = kickstart.get_partitions(self.ks)
+        
+        #list of disks where a disk is an dict with name: and size
+        disks = []
 
-    
-        for i in range(len(self.__disks)):
-            item = self.__disks[i]
+        for i in range(len(parts)):
+            if parts[i].disk is None:
+                #default disk sda
+                disk = "sda"
+            else: disk = parts[i].disk
+            if parts[i].size is None:
+                #default 4 gig
+                size = 4096L * 1024L * 1024L
+            else: size =   parts[i].size * 1024L * 1024L
+            
+            if len(disks) == 0:
+                disks.append({ 'name': disk, 'size': size })
+            else: 
+                for i in range(len(disks)):
+                    if disks[i]['name'] == disk:
+                        disks[i]['size'] = disks[i]['size'] + size
+                    else: disks.append({ 'name': disk, 'size': size })
+            
+                        
+        #create disk
+        for item in disks:
             logging.debug("Adding disk %s as %s/disk-%s.raws" % (item['name'], self.__imgdir, item['name']))
-            disk = SparseLoopbackDisk("%s/disk-%s.raw" % (self.__imgdir, item['name']),
-                                      item['size'])
-            self.__disks[i] = disk
+            disk = SparseLoopbackDisk("%s/disk-%s.raw" % (self.__imgdir, item['name']),item['size'])
+            self.__disks[item['name']] = disk
 
         self.__instloop = PartitionedMount(self.__disks,
                                            self._instroot)
@@ -96,6 +116,9 @@ class ApplianceImageCreator(ImageCreator):
             self.__instloop.mount()
         except MountError, e:
             raise CreatorError("Failed mount disks : %s" % e)
+
+
+
 
     def _get_required_packages(self):
         return ["grub"]
@@ -279,4 +302,5 @@ class ApplianceImageCreator(ImageCreator):
                                       "-O", self.__format,  dst])
                 if rc != 0:
                     raise CreatorError("Unable to convert disk to %s" % (self.__format))
+
 
