@@ -82,14 +82,8 @@ class ApplianceImageCreator(ImageCreator):
         disks = []
 
         for i in range(len(parts)):
-            if parts[i].disk is None:
-                #default disk sda
-                disk = "sda"
-            else: disk = parts[i].disk
-            if parts[i].size is None:
-                #default 4 gig
-                size = 4096L * 1024L * 1024L
-            else: size =   parts[i].size * 1024L * 1024L
+            disk = parts[i].disk
+            size =   parts[i].size * 1024L * 1024L
             
             if len(disks) == 0:
                 disks.append({ 'name': disk, 'size': size })
@@ -220,9 +214,10 @@ class ApplianceImageCreator(ImageCreator):
         stage2 = self._instroot + "/boot/grub/stage2"
 
         setup = ""
-        for i in range(len(self.__disks)):
-            loopdev = self.__disks[i]['disk'].device
-            setup += "device (hd%d) %s\n" % (i, loopdev)
+        #for i in range(len(self.__disks)):
+        for name in self.__disks.keys():
+            loopdev = self.__disks[name].device
+            setup += "device (%s) %s\n" % (name, loopdev)
         setup += "root (hd0,%d)\n" % bootdevnum
         setup += "setup --stage2=%s --prefix=%s/grub  (hd0)\n" % (stage2, prefix)
         setup += "quit\n"
@@ -262,8 +257,9 @@ class ApplianceImageCreator(ImageCreator):
         xml += "      <os>\n"
         xml += "        <loader dev='hd'/>\n"
         xml += "      </os>\n"
-        for i in range(len(self.__disks)):
-            xml += "      <drive disk='%s.%s' target='hd%s'/>\n" % (self.__disks[i]['name'], self.__format, chr(ord('a')+i))
+        #for i in range(len(self.__disks)):
+        for name in self.__disks.keys():
+            xml += "      <drive disk='%s.%s' target='hd%s'/>\n" % (self.__disks[name], self.__disks[name],self.__disks[name])
         xml += "    </boot>\n"
         xml += "    <devices>\n"
         xml += "      <vcpu>1</vcpu>\n"
@@ -273,9 +269,10 @@ class ApplianceImageCreator(ImageCreator):
         xml += "    </devices>\n"
         xml += "  </domain>\n"
         xml += "  <storage>\n"
-        for i in range(len(self.__disks)):
+        #for i in range(len(self.__disks)):
+        for name in self.__disks.keys():
             # XXX don't hardcode raw
-            xml += "    <disk file='%s.%s' use='system' format='%s'/>\n" % (self.__disks[i]['name'], self.__format, self.__format)
+            xml += "    <disk file='%s.%s' use='system' format='%s'/>\n" % (self.__disks[name], self.__format, self.__format)
         xml += "  </storage>\n"
         xml += "</image>\n"
 
@@ -290,17 +287,18 @@ class ApplianceImageCreator(ImageCreator):
 
         self._write_image_xml()
         logging.debug("moving disks to final location")
-        for i in range(len(self.__disks)):
-            dst = "%s/%s.%s" % (self._outdir, self.__disks[i]['name'], self.__format)
+        for name in self.__disks.keys():
+            dst = "%s/%s.%s" % (self._outdir, self.__disks[name], self.__format)
             if self.__format == "raw":
-                logging.debug("moving %s image to %s " % (self.__disks[i]['disk'].lofile, dst))
-                shutil.move(self.__disks[i]['disk'].lofile, dst)
+                logging.debug("moving %s image to %s " % (self.__disks[name].lofile, dst))
+                shutil.move(self.__disks[name].lofile, dst)
             else:
-                logging.debug("converting %s image to %s" % (self.__disks[i]['disk'].lofile, dst))
+                logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
                 rc = subprocess.call(["qemu-img", "convert",
-                                      "-f", "raw", self.__disks[i]['disk'].lofile,
+                                      "-f", "raw", self.__disks[name].lofile,
                                       "-O", self.__format,  dst])
                 if rc != 0:
                     raise CreatorError("Unable to convert disk to %s" % (self.__format))
+
 
 
