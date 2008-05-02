@@ -30,10 +30,11 @@ def parse_options(args):
 
     parser.add_option("-n", "--name", type="string", dest="name",
                       help="Appliance name")
-    parser.add_option("-D", "--disk", type="string", dest="disk",
-                      action="append", help="Disk file name")
-    parser.add_option("-s", "--size", type="float", dest="size",
-                      action="append", help="Disk size in MB")
+    #reads in disk info form ks file
+    #parser.add_option("-D", "--disk", type="string", dest="disk",
+    #                  action="append", help="Disk file name")
+    #parser.add_option("-s", "--size", type="float", dest="size",
+    #                  action="append", help="Disk size in MB")
     parser.add_option("-f", "--format", type="string", dest="format",
                       help="Disk format (raw, qcow2, vmdk, ...)")
 
@@ -112,4 +113,5 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
+
 
