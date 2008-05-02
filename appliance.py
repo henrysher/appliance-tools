@@ -215,9 +215,11 @@ class ApplianceImageCreator(ImageCreator):
 
         setup = ""
         #for i in range(len(self.__disks)):
+        i = 0
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
-            setup += "device (%s) %s\n" % (name, loopdev)
+            setup += "device (hd%s) %s\n" % (i,loopdev)
+            i =i+1
         setup += "root (hd0,%d)\n" % bootdevnum
         setup += "setup --stage2=%s --prefix=%s/grub  (hd0)\n" % (stage2, prefix)
         setup += "quit\n"
@@ -258,8 +260,10 @@ class ApplianceImageCreator(ImageCreator):
         xml += "        <loader dev='hd'/>\n"
         xml += "      </os>\n"
         #for i in range(len(self.__disks)):
+        i = 0
         for name in self.__disks.keys():
-            xml += "      <drive disk='%s.%s' target='hd%s'/>\n" % (self.__disks[name], self.__disks[name],self.__disks[name])
+            xml += "      <drive disk='%s.%s' target='hd%s'/>\n" % (self.__disks[name], self.__format,chr(ord('a')+i))
+            i = i + 1
         xml += "    </boot>\n"
         xml += "    <devices>\n"
         xml += "      <vcpu>1</vcpu>\n"
@@ -288,7 +292,7 @@ class ApplianceImageCreator(ImageCreator):
         self._write_image_xml()
         logging.debug("moving disks to final location")
         for name in self.__disks.keys():
-            dst = "%s/%s.%s" % (self._outdir, self.__disks[name], self.__format)
+            dst = "%s/%s.%s" % (self._outdir, name, self.__format)
             if self.__format == "raw":
                 logging.debug("moving %s image to %s " % (self.__disks[name].lofile, dst))
                 shutil.move(self.__disks[name].lofile, dst)
