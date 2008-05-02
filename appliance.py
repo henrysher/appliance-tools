@@ -262,7 +262,7 @@ class ApplianceImageCreator(ImageCreator):
         #for i in range(len(self.__disks)):
         i = 0
         for name in self.__disks.keys():
-            xml += "      <drive disk='%s.%s' target='hd%s'/>\n" % (self.name-name, self.__format,chr(ord('a')+i))
+            xml += "      <drive disk='%s-%s.%s' target='hd%s'/>\n" % (self.name,name, self.__format,chr(ord('a')+i))
             i = i + 1
         xml += "    </boot>\n"
         xml += "    <devices>\n"
@@ -276,7 +276,7 @@ class ApplianceImageCreator(ImageCreator):
         #for i in range(len(self.__disks)):
         for name in self.__disks.keys():
             # XXX don't hardcode raw
-            xml += "    <disk file='%s.%s' use='system' format='%s'/>\n" % (self.name-name, self.__format, self.__format)
+            xml += "    <disk file='%s-%s.%s' use='system' format='%s'/>\n" % (self.name,name, self.__format, self.__format)
         xml += "  </storage>\n"
         xml += "</image>\n"
 
@@ -292,7 +292,7 @@ class ApplianceImageCreator(ImageCreator):
         self._write_image_xml()
         logging.debug("moving disks to final location")
         for name in self.__disks.keys():
-            dst = "%s/%s.%s" % (self._outdir, self.name-name, self.__format)
+            dst = "%s/%s-%s.%s" % (self._outdir, self.name,name, self.__format)
             if self.__format == "raw":
                 logging.debug("moving %s image to %s " % (self.__disks[name].lofile, dst))
                 shutil.move(self.__disks[name].lofile, dst)
