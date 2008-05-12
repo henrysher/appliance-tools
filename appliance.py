@@ -68,7 +68,24 @@ class ApplianceImageCreator(ImageCreator):
 
         s += self._get_fstab_special()
         return s
+    
+    
+    def _create_mkinitrd_config(self):
+        #write  to tell which modules to be included in initrd
         
+        mkinitrd = ""
+        mkinitrd += "PROBE=\"no\"\n"
+        mkinitrd += "MODULES=\"ext3 ata_piix sd_mod libata scsi_mod\"\n"
+        mkinitrd += "rootfs=\"ext3\"\n"
+        mkinitrd += "rootopts=\"defaults\"\n"
+        
+        logging.debug("Writing mkinitrd config %s/etc/sysconfig/mkinitrd" % self._instroot)
+        os.makedirs(self._instroot + "/etc/sysconfig/",mode=644)
+        cfg = open(self._instroot + "/etc/sysconfig/mkinitrd", "w")
+        cfg.write(mkinitrd)
+        cfg.close()
+                       
+    
     #
     # Actual implementation
     #
@@ -110,8 +127,8 @@ class ApplianceImageCreator(ImageCreator):
             self.__instloop.mount()
         except MountError, e:
             raise CreatorError("Failed mount disks : %s" % e)
-
-
+        
+        self._create_mkinitrd_config()
 
 
     def _get_required_packages(self):
