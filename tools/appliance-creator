@@ -21,7 +21,7 @@ import os
 import sys
 import shutil
 import optparse
-
+import appcreate
 import imgcreate
 import logging
 
@@ -109,7 +109,7 @@ def main():
     if options.format:
         format = options.format
     
-    creator = imgcreate.ApplianceImageCreator(ks, name, format)
+    creator = appcreate.ApplianceImageCreator(ks, name, format)
     creator.tmpdir = options.tmpdir
     
     try:
