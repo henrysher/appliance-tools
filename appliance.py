@@ -38,7 +38,7 @@ class ApplianceImageCreator(ImageCreator):
 
     """
 
-    def __init__(self, ks, name, disks, format="raw"):
+    def __init__(self, ks, name, format="raw"):
         """Initialize a ApplianceImageCreator instance.
 
         This method takes the same arguments as ImageCreator.__init__()
@@ -50,6 +50,8 @@ class ApplianceImageCreator(ImageCreator):
         self.__imgdir = None
         self.__format = format
         self.__disks = {}
+        self.__vmem = 512
+        self.__vcpu = 1
         
 
     def _get_fstab(self):
@@ -177,6 +179,7 @@ class ApplianceImageCreator(ImageCreator):
 
     def _create_grub_config(self):
         (bootdevnum, rootdevnum, rootdev, prefix) = self._get_grub_boot_config()
+        options = self.ks.handler.bootloader.appendLine
 
         # NB we're assuming that grub config is on the first physical disk
         # ie /boot must be on sda, or if there's no /boot, then / must be sda
@@ -197,7 +200,7 @@ class ApplianceImageCreator(ImageCreator):
         for v in versions:
             grub += "title Fedora (%s)\n" % v
             grub += "        root (hd0,%d)\n" % bootdevnum
-            grub += "        kernel %s/vmlinuz-%s ro root=%s\n" % (prefix, v, rootdev)
+            grub += "        kernel %s/vmlinuz-%s ro root=%s %s\n" % (prefix, v, rootdev, options)
             grub += "        initrd %s/initrd-%s.img\n" % (prefix, v)
 
         logging.debug("Writing grub config %s/boot/grub/grub.conf" % self._instroot)
@@ -283,8 +286,8 @@ class ApplianceImageCreator(ImageCreator):
             i = i + 1
         xml += "    </boot>\n"
         xml += "    <devices>\n"
-        xml += "      <vcpu>1</vcpu>\n"
-        xml += "      <memory>%d</memory>\n" %(256 * 1024)
+        xml += "      <vcpu>%s</vcpu>\n" % self.__vcpu 
+        xml += "      <memory>%d</memory>\n" %(self.__vmem * 1024)
         xml += "      <interface/>\n"
         xml += "      <graphics/>\n"
         xml += "    </devices>\n"

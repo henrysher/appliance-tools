@@ -26,7 +26,7 @@ import imgcreate
 import logging
 
 def parse_options(args):
-    parser = optparse.OptionParser(usage = "%prog [--disk=<disk1>] [--size=<MB>] <kickstart>")
+    parser = optparse.OptionParser(usage = "%prog <kickstart>")
 
     parser.add_option("-n", "--name", type="string", dest="name",
                       help="Appliance name")
@@ -37,7 +37,16 @@ def parse_options(args):
     #                  action="append", help="Disk size in MB")
     parser.add_option("-f", "--format", type="string", dest="format",
                       help="Disk format (raw, qcow2, vmdk, ...)")
-
+    
+    # options related to the config of your system
+    parser.add_option("-t", "--tmpdir", type="string",
+                      dest="tmpdir", default="/var/tmp",
+                      help="Temporary directory to use (default: /var/tmp)")
+    
+    parser.add_option("", "--cache", type="string",
+                      dest="cachedir", default=None,
+                      help="Cache directory to use (default: private cache")
+    
     imgcreate.setup_logging(parser)
 
     (options, args) = parser.parse_args()
@@ -99,10 +108,17 @@ def main():
     format = "raw"
     if options.format:
         format = options.format
-    creator = imgcreate.ApplianceImageCreator(ks, name, disks, format)
-
+    
+    creator = imgcreate.ApplianceImageCreator(ks, name, format)
+    creator.tmpdir = options.tmpdir
+    
     try:
-        creator.create()
+        #creator.create()
+        creator.mount("NONE", options.cachedir)
+        creator.install()
+        creator.configure()
+        creator.unmount()
+        creator.package()    
     except imgcreate.CreatorError, e:
         logging.error("Unable to create appliance : %s" % e)
         return 1
