@@ -1,16 +1,16 @@
-From d4e0c5909b868112ef5a23dff8204d92ec6ee961 Mon Sep 17 00:00:00 2001
-From: Daniel P. Berrange <berrange@redhat.com>
-Date: Wed, 20 Feb 2008 15:08:56 -0500
-Subject: [PATCH] Refactor disk/mount classes to allow multi-partition/fs layouts
+From 2de5f2bff3572d168db357b36b666f0761dec1ae Mon Sep 17 00:00:00 2001
+From: huff <dhuff@redhat.com>
+Date: Mon, 19 May 2008 11:01:48 -0400
+Subject: [PATCH] -Refactor-disk-mount-classes-to-allow-multi-partitions
 
 ---
  imgcreate/creator.py |   17 ++--
- imgcreate/fs.py      |  247 ++++++++++++++++++++++++++++++++-----------------
+ imgcreate/fs.py      |  250 ++++++++++++++++++++++++++++++++------------------
  imgcreate/live.py    |    6 +-
- 3 files changed, 174 insertions(+), 96 deletions(-)
+ 3 files changed, 175 insertions(+), 98 deletions(-)
 
 diff --git a/imgcreate/creator.py b/imgcreate/creator.py
-index 0d22b56..979e1b9 100644
+index febb847..7ccbef9 100644
 --- a/imgcreate/creator.py
 +++ b/imgcreate/creator.py
 @@ -208,7 +208,11 @@ class ImageCreator(object):
@@ -26,7 +26,7 @@ index 0d22b56..979e1b9 100644
          s += "tmpfs      /dev/shm  tmpfs   defaults         0 0\n"
          s += "proc       /proc     proc    defaults         0 0\n"
          s += "sysfs      /sys      sysfs   defaults         0 0\n"
-@@ -817,12 +821,11 @@ class LoopImageCreator(ImageCreator):
+@@ -840,12 +844,11 @@ class LoopImageCreator(ImageCreator):
          if not base_on is None:
              shutil.copyfile(base_on, self._image)
  
@@ -45,7 +45,7 @@ index 0d22b56..979e1b9 100644
          try:
              self.__instloop.mount()
 diff --git a/imgcreate/fs.py b/imgcreate/fs.py
-index 9ca3a3e..e53cfa9 100644
+index 98c0db4..314a776 100644
 --- a/imgcreate/fs.py
 +++ b/imgcreate/fs.py
 @@ -24,6 +24,7 @@ import stat
@@ -375,7 +375,17 @@ index 9ca3a3e..e53cfa9 100644
                  top = t
              else:
                  bot = t
-@@ -306,8 +382,8 @@ class DeviceMapperSnapshot(object):
+@@ -284,8 +360,7 @@ class SparseExtLoopbackMount(SparseLoopbackMount):
+         
+         minsize = self.__resize_to_minimal()
+ 
+-        self.truncate(minsize)
+-        self.resize(size)
++        self.disk.truncate(minsize)
+         return minsize
+ 
+ class DeviceMapperSnapshot(object):
+@@ -306,8 +381,8 @@ class DeviceMapperSnapshot(object):
          if self.__created:
              return
  
@@ -386,7 +396,7 @@ index 9ca3a3e..e53cfa9 100644
  
          self.__name = "imgcreate-%d-%d" % (os.getpid(),
                                             random.randint(0, 2**16))
-@@ -315,8 +391,8 @@ class DeviceMapperSnapshot(object):
+@@ -315,8 +390,8 @@ class DeviceMapperSnapshot(object):
          size = os.stat(self.imgloop.lofile)[stat.ST_SIZE]
  
          table = "0 %d snapshot %s %s p 8" % (size / 512,
@@ -397,7 +407,7 @@ index 9ca3a3e..e53cfa9 100644
  
          args = ["/sbin/dmsetup", "create", self.__name, "--table", table]
          if subprocess.call(args) != 0:
-@@ -382,15 +458,14 @@ class DeviceMapperSnapshot(object):
+@@ -382,15 +457,14 @@ class DeviceMapperSnapshot(object):
  #   8) Create a squashfs of the COW
  #
  def create_image_minimizer(path, image, minimal_size):
@@ -417,10 +427,10 @@ index 9ca3a3e..e53cfa9 100644
  
          resize2fs(snapshot.path, minimal_size)
 diff --git a/imgcreate/live.py b/imgcreate/live.py
-index 03a5466..e25e8cd 100644
+index 130f7fa..9ecd3cf 100644
 --- a/imgcreate/live.py
 +++ b/imgcreate/live.py
-@@ -131,7 +131,7 @@ class LiveImageCreatorBase(LoopImageCreator):
+@@ -129,7 +129,7 @@ class LiveImageCreatorBase(LoopImageCreator):
      #
      def __base_on_iso(self, base_on):
          """helper function to extract ext3 file system from a live CD ISO"""
@@ -429,7 +439,7 @@ index 03a5466..e25e8cd 100644
  
          try:
              isoloop.mount()
-@@ -145,10 +145,10 @@ class LiveImageCreatorBase(LoopImageCreator):
+@@ -143,10 +143,10 @@ class LiveImageCreatorBase(LoopImageCreator):
          else:
              squashimg = isoloop.mountdir + "/LiveOS/squashfs.img"
              
@@ -443,5 +453,5 @@ index 03a5466..e25e8cd 100644
                                     "squashfs.img doesn't exist" % base_on)
  
 -- 
-1.5.4.3
+1.5.4.1
 

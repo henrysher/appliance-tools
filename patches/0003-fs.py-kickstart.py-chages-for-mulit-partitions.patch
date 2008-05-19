@@ -1,27 +1,25 @@
-From e5ac5d59bb054c1533189af82a330264728cbc6b Mon Sep 17 00:00:00 2001
+From 835cb44a7084498a164c06bb54f1b44f8da3d5cd Mon Sep 17 00:00:00 2001
 From: huff <dhuff@redhat.com>
-Date: Wed, 23 Apr 2008 12:34:32 -0400
-Subject: [PATCH] changes:
+Date: Mon, 19 May 2008 11:10:39 -0400
+Subject: [PATCH] -fs.py-kickstart.py-chages-for-mulit-partitions
 
 ---
- imgcreate/fs.py        |  226 +++++++++++++++++++++++++++++++++++++++++++++++-
+ imgcreate/fs.py        |  223 +++++++++++++++++++++++++++++++++++++++++++++++-
  imgcreate/kickstart.py |    4 +
- 2 files changed, 226 insertions(+), 4 deletions(-)
+ 2 files changed, 225 insertions(+), 2 deletions(-)
 
 diff --git a/imgcreate/fs.py b/imgcreate/fs.py
-index 41dec0a..aaff4c3 100644
+index 314a776..aaff4c3 100644
 --- a/imgcreate/fs.py
 +++ b/imgcreate/fs.py
-@@ -357,12 +357,229 @@ class ExtDiskMount(DiskMount):
+@@ -357,11 +357,229 @@ class ExtDiskMount(DiskMount):
  
      def resparse(self, size = None):
          self.cleanup()
 -        
          minsize = self.__resize_to_minimal()
 -
--        self.truncate(minsize)
--        self.resize(size)
-+        self.disk.truncate(minsize)
+         self.disk.truncate(minsize)
          return minsize
 +    
 +class PartitionedMount(Mount):
@@ -246,16 +244,16 @@ index 41dec0a..aaff4c3 100644
  
  class DeviceMapperSnapshot(object):
      def __init__(self, imgloop, cowloop):
-@@ -479,3 +696,4 @@ def create_image_minimizer(path, image, minimal_size):
+@@ -478,3 +696,4 @@ def create_image_minimizer(path, image, minimal_size):
      mksquashfs(cowloop.lofile, path)
  
      os.unlink(cowloop.lofile)
 +
 diff --git a/imgcreate/kickstart.py b/imgcreate/kickstart.py
-index 30156d8..a63bef5 100644
+index ef7b9e4..eff28bb 100644
 --- a/imgcreate/kickstart.py
 +++ b/imgcreate/kickstart.py
-@@ -470,6 +470,9 @@ def get_groups(ks, required = []):
+@@ -474,6 +474,9 @@ def get_groups(ks, required = []):
  def get_excluded(ks, required = []):
      return ks.handler.packages.excludedList + required
  
@@ -265,7 +263,7 @@ index 30156d8..a63bef5 100644
  def ignore_missing(ks):
      return ks.handler.packages.handleMissing == ksconstants.KS_MISSING_IGNORE
  
-@@ -486,3 +489,4 @@ def get_post_scripts(ks):
+@@ -490,3 +493,4 @@ def get_post_scripts(ks):
  
  def selinux_enabled(ks):
      return ks.handler.selinux.selinux == ksconstants.SELINUX_ENFORCING

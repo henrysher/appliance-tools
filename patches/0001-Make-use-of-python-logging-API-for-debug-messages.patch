@@ -1,15 +1,8 @@
-From 2f845e21e4fbb1fe4e2039ea6f2cfc1553cfca41 Mon Sep 17 00:00:00 2001
-From: Daniel P. Berrange <berrange@redhat.com>
-Date: Wed, 20 Feb 2008 15:25:21 -0500
-Subject: [PATCH] Make use of python logging API for debug messages
+From d915eac0fc27f6ff524561f3455dbbccc2c597ca Mon Sep 17 00:00:00 2001
+From: huff <dhuff@redhat.com>
+Date: Mon, 19 May 2008 10:58:48 -0400
+Subject: [PATCH] -Make-use-of-python-logging-API-for-debug-messages
 
-Add a new setup_logging() convenience API for adding
-command line options related to debugging.
-
-Also, make everything use the root logger for logging
-messages.
-
-Signed-off-by: Mark McLoughlin <markmc@redhat.com>
 ---
  imgcreate/__init__.py |    4 ++-
  imgcreate/creator.py  |    5 ++-
