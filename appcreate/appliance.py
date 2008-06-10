@@ -198,7 +198,7 @@ class ApplianceImageCreator(ImageCreator):
                 versions.append(version)
 
         for v in versions:
-            grub += "title Fedora (%s)\n" % v
+            grub += "title %s (%s)\n" % (self.name, v)
             grub += "        root (hd0,%d)\n" % bootdevnum
             grub += "        kernel %s/vmlinuz-%s ro root=%s %s\n" % (prefix, v, rootdev, options)
             grub += "        initrd %s/initrd-%s.img\n" % (prefix, v)
@@ -323,6 +323,7 @@ class ApplianceImageCreator(ImageCreator):
                                       "-O", self.__format,  dst])
                 if rc != 0:
                     raise CreatorError("Unable to convert disk to %s" % (self.__format))
+
 
 
 
