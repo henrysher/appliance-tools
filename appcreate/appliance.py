@@ -106,11 +106,16 @@ class ApplianceImageCreator(ImageCreator):
             
             if len(disks) == 0:
                 disks.append({ 'name': disk, 'size': size })
-            else: 
-                for i in range(len(disks)):
-                    if disks[i]['name'] == disk:
-                        disks[i]['size'] = disks[i]['size'] + size
-                    else: disks.append({ 'name': disk, 'size': size })
+            else:
+                found = 'false' 
+                for j in range(len(disks)):
+                    if disks[j]['name'] == disk:
+                        disks[j]['size'] = disks[j]['size'] + size
+                        found = 'true'
+                        break
+                    else: found = 'false'
+                if found == 'false':
+                    disks.append({ 'name': disk, 'size': size })    
             
                         
         #create disk
