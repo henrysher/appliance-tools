@@ -27,6 +27,7 @@ import logging
 from imgcreate.errors import *
 from imgcreate.fs import *
 from imgcreate.creator import *
+from appcreate.partitionedfs import *
 
 class ApplianceImageCreator(ImageCreator):
     """Installs a system into a file containing a partitioned disk image.

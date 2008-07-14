@@ -24,6 +24,7 @@ from imgcreate.kickstart import *
 from imgcreate.fs import *
 from imgcreate.debug import *
 from appcreate.appliance import *
+from appcreate.partitionedfs import *
 
 """A set of classes for building Fedora applinace images.
 
