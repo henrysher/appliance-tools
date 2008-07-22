@@ -61,8 +61,6 @@ def parse_options(args):
     
     parser.add_option_group(sysopt)
 
-    imgcreate.setup_logging(parser)
-    
     (options, args) = parser.parse_args()
     
 

@@ -22,7 +22,6 @@ from imgcreate.creator import *
 from imgcreate.yuminst import *
 from imgcreate.kickstart import *
 from imgcreate.fs import *
-from imgcreate.debug import *
 from appcreate.appliance import *
 
 """A set of classes for building Fedora applinace images.
