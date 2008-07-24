@@ -69,7 +69,10 @@ class ApplianceImageCreator(ImageCreator):
                 'mountpoint': p['mountpoint'],
                 'fstype': p['fstype'] }
 
-        s += self._get_fstab_special()
+        s += "devpts     /dev/pts  devpts  gid=5,mode=620   0 0\n"
+        s += "tmpfs      /dev/shm  tmpfs   defaults         0 0\n"
+        s += "proc       /proc     proc    defaults         0 0\n"
+        s += "sysfs      /sys      sysfs   defaults         0 0\n"
         return s
     
     
