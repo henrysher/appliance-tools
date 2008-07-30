@@ -37,6 +37,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %doc README
+%doc COPYING
 %{_bindir}/appliance-creator
 %dir %{_datadir}/appliance-tools
 %{_datadir}/appliance-tools/*
