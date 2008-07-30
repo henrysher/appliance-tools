@@ -1,0 +1,40 @@
+                       The Fedora Appliance tools
+                  Daniel P. Berrange <berrange@redhat.com>
+                      David Huff <dhuff@redhat.com>
+
+                    Last updated: July 30 2009 (v0.1)
+
+
+Tools for generating appliance images on Fedora based systems including
+derived distributions such as RHEL, CentOS and others. See more info on the project at
+
+http://thincrust.net for more details.
+
+for more details. Discussion of  this project takes places at the
+thincrust-devel@redhat.com mailing list
+
+http://www.redhat.com/mailman/listinfo/thincrust-devel
+
+This project and it's source files is licensed under the GPLv2
+license. See the file COPYING for details.
+
+
+1. APPLIANCE CREATOR DESIGN GOALS
+
+This is a first cut the Appliance Creation Tool (ACT) a tool to create
+Appliance Images from a kickstart file. This tool uses the liveCD
+creator API as well as patches to the LIVECD API originally written by Daniel P. Berrange <berrange@redhat.com> to create a multi partitioned disk image. This Disk image can then be booted in a virtual container such as XEN, KVM, and VMWARE.
+
+
+2. CREATING AN APPLIANCE IMAGE
+
+To create an appliance image, the applinace-creator tool is used. Super user
+privileges are needed. The tool is more or less self-documenting, use
+the --help option to see options.
+
+
+
+
+
+
+
