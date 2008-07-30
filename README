@@ -1,38 +1,39 @@
+                       The Fedora Appliance tools
+                  Daniel P. Berrange <berrange@redhat.com>
+                      David Huff <dhuff@redhat.com>
 
-This is a first cut the Appliance Creation Tool (ACT) a tool to create Appliance Images from a kick start file. This tool will use the liveCD creator API as well as patches to create a multi partitioned disk. 
-
-Directory structure:
-
-patches   -> where patches to livecd creator will go
-config    -> kickstart files that describe the appliance
-tools     -> the tools
-appcreate -> lib files
+                    Last updated: July 30 2009 (v0.1)
 
 
-prebuilt installs:
-rpms are available at thincrust.net
-make sure you have patched version of livecd-tools
-install appliance-tools rpm
+Tools for generating appliance images on Fedora based systems including
+derived distributions such as RHEL, CentOS and others. See more info on the project at
+
+http://thincrust.net for more details.
+
+for more details. Discussion of  this project takes places at the
+thincrust-devel@redhat.com mailing list
+
+http://www.redhat.com/mailman/listinfo/thincrust-devel
+
+This project and it's source files is licensed under the GPLv2
+license. See the file COPYING for details.
 
 
-Developer Install:
+1. APPLIANCE CREATOR DESIGN GOALS
 
-Check out the code. Assume this done in $TCHOME
-cd $TCHOME
-git clone git://git.fedorahosted.org/livecd
-git clone git://git.et.redhat.com/ace.git
-git clone git://git.et.redhat.com/aos.git
+This is a first cut the Appliance Creation Tool (ACT) a tool to create
+Appliance Images from a kickstart file. This tool uses the liveCD
+creator API as well as patches to the LIVECD API originally written by Daniel P. Berrange <berrange@redhat.com> to create a multi partitioned disk image. This Disk image can then be booted in a virtual container such as XEN, KVM, and VMWARE.
 
-Patch livecd creator
-cd $TCHOME/livecd
-patch -p1 < $TCHOME/act/patches/0001-Make-use-of-python-logging-API-for-debug-messages.patch
-patch -p1 < $TCHOME/act/patches/0002-Refactor-disk-mount-classes-to-allow-multi-partition.patch
-patch -p1 < $TCHOME/act/patches/0003-fs.py-kickstart.py-chages-for-mulit-partition.patch
 
-cp $TCHOME/act/tools/appliance-creator tools/
-cp $TCHOME/act/appcreate/*.py appcreate/
+2. CREATING AN APPLIANCE IMAGE
 
-chmod a+x tools/appliance-creator
+To create an appliance image, the applinace-creator tool is used. Super user privileges are needed. The tool is more or less self-documenting, use
+the --help option to see options.
 
-export PYTHONPATH=$TCHOME/livecd
+
+
+
+
+
 
