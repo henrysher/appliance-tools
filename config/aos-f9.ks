@@ -5,7 +5,7 @@ lang C
 keyboard us
 timezone US/Eastern
 auth --useshadow --enablemd5
-selinux --disabled
+selinux --enforcing
 firewall --disabled
 bootloader --timeout=1 --append="acpi=force"
 network --bootproto=dhcp --device=eth0 --onboot=on
@@ -33,5 +33,5 @@ part / --size 500 --fstype ext3 --ondisk sda
 # Add custom post scripts after the base post.
 # 
 %post
-	#%include base-post.ks
+	%include base-post.ks
 %end
