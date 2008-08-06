@@ -18,9 +18,10 @@ rootpw --iscrypted $1$uw6MV$m6VtUWPed4SqgoW6fKfTZ/
 part / --size 500 --fstype ext3 --ondisk sda
 
 #
-# Include the repositories
+# Repositories
 #
-%include repo-f8.ks
+repo --name=f8 --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-8&arch=$basearch
+repo --name=f8-updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f8&arch=$basearch
 
 #
 # Add all the packages after the base packages
@@ -33,5 +34,5 @@ part / --size 500 --fstype ext3 --ondisk sda
 # Add custom post scripts after the base post.
 # 
 %post
-	%include base-post.ks
+	#%include base-post.ks
 %end

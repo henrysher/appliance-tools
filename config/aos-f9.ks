@@ -5,7 +5,7 @@ lang C
 keyboard us
 timezone US/Eastern
 auth --useshadow --enablemd5
-selinux --enforcing
+selinux --disabled
 firewall --disabled
 bootloader --timeout=1 --append="acpi=force"
 network --bootproto=dhcp --device=eth0 --onboot=on
@@ -18,9 +18,10 @@ rootpw --iscrypted $1$uw6MV$m6VtUWPed4SqgoW6fKfTZ/
 part / --size 500 --fstype ext3 --ondisk sda
 
 #
-# Include the repositories
+# Repositories
 #
-%include repo-f9.ks
+repo --name=f9 --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-9&arch=$basearch
+repo --name=f9-updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f9&arch=$basearch
 
 #
 # Add all the packages after the base packages

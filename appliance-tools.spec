@@ -4,24 +4,27 @@
 
 Summary: Tools for building Appliances
 Name: appliance-tools
-Version: 001
-Release: thincrust
+Version: 003
+Release: 1%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://thincrust.net
+#need to add tag for build
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Requires: livecd-tools >= 017
+#requires latest build form livecd-tools not out yet
+Requires: livecd-tools >= 017.1
 BuildRequires: python
+BuildArch: noarch
 
 
-%description 
+%description
 Tools for generating appliance images on Fedora based systems including
 derived distributions such as RHEL, CentOS and others. See
 http://thincrust.net for more details.
 
 %prep
-%setup -q -n act
+%setup -q
 
 %build
 make
@@ -46,6 +49,18 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/appcreate/*.pyc
 
 %changelog
+* Wed Jul 09 2008 David Huff <dhuff@redhat.com> - 003-1
+- version 3 is build for latest version of livecd-tools with patches
+
+* Wed Jun 11 2008 David Huff <dhuff@redhat.com> - 001-3
+- fixed dependancys
+
+* Tue Jun 10 2008 David Huff <dhuff@redhat.com> - 001-2
+- Undated opt parser
+- fixed grub issue
+- build aginsted newer livecd-tools for selinux issues
+
 * Wed May 14 2008 David Huff <dhuff@redhat.com> - 001
 - Initial build.
+
 

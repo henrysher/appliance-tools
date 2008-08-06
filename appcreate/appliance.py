@@ -325,6 +325,7 @@ class ApplianceImageCreator(ImageCreator):
             if self.__format == "raw":
                 logging.debug("moving %s image to %s " % (self.__disks[name].lofile, dst))
                 shutil.move(self.__disks[name].lofile, dst)
+                print "Wrote: %s" % dst
             else:
                 logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
                 rc = subprocess.call(["qemu-img", "convert",
@@ -332,7 +333,6 @@ class ApplianceImageCreator(ImageCreator):
                                       "-O", self.__format,  dst])
                 if rc != 0:
                     raise CreatorError("Unable to convert disk to %s" % (self.__format))
-
 
 
 

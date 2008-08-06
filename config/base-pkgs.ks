@@ -13,6 +13,8 @@ rootfiles
 yum
 vim-minimal
 acpid
+#needed to disable selinux
+lokkit
 
 #Allow for dhcp access
 dhclient

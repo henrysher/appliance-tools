@@ -1,5 +1,4 @@
-
-VERSION = 001
+VERSION = 003
 
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}
@@ -18,6 +17,7 @@ all:
 install:
 	$(INSTALL_PROGRAM) -D tools/appliance-creator $(DESTDIR)/usr/bin/appliance-creator
 	$(INSTALL_DATA) -D README $(DESTDIR)/usr/share/doc/appliance-tools-$(VERSION)/README
+	$(INSTALL_DATA) -D COPYING $(DESTDIR)/usr/share/doc/appliance-tools-$(VERSION)/COPYING
 	mkdir -p $(DESTDIR)/usr/share/appliance-tools/
 	$(INSTALL_DATA) -D config/*.ks $(DESTDIR)/usr/share/appliance-tools/
 	mkdir -p $(DESTDIR)/$(PYTHONDIR)/appcreate
@@ -35,3 +35,4 @@ dist : all
 
 clean:
 	rm -f *~ creator/*~ installer/*~ config/*~
+

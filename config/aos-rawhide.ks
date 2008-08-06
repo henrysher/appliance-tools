@@ -18,9 +18,9 @@ rootpw --iscrypted $1$uw6MV$m6VtUWPed4SqgoW6fKfTZ/
 part / --size 500 --fstype ext3 --ondisk sda
 
 #
-# Include the repositories
+# Repositories
 #
-%include repo-rawhide.ks
+repo --name=rawhide --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=rawhide&arch=$basearch
 
 #
 # Add all the packages after the base packages

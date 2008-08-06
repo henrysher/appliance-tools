@@ -31,6 +31,12 @@ creator API as well as patches to the LIVECD API originally written by Daniel P.
 To create an appliance image, the applinace-creator tool is used. Super user privileges are needed. The tool is more or less self-documenting, use
 the --help option to see options.
 
+Build the applinace
+# appliance-creator -n ThinCrust --config /usr/share/appliance-tools/aos-f9.ks
+
+Run using libvirt (requires libvirt virt-manager libvirt-python python-virtinst)
+# virt-image ThinCrust.xml
+
 
 
 
