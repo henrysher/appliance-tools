@@ -8,12 +8,10 @@ Version: 003
 Release: 1%{?dist}
 License: GPLv2
 Group: System Environment/Base
-URL: http://thincrust.net
-#need to add tag for build
+URL: http://git.et.redhat.com/?p=act.git
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-#requires latest build form livecd-tools not out yet
-Requires: livecd-tools >= 017.1
+Requires: livecd-tools >= 018
 BuildRequires: python
 BuildArch: noarch
 
@@ -50,7 +48,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Wed Jul 09 2008 David Huff <dhuff@redhat.com> - 003-1
-- version 3 is build for latest version of livecd-tools with patches
+- version 003 is build for latest version of livecd-tools with patches
+
+* Wed Jul 09 2008 Alan Pevec <apevec@redhat.com> 002-1
+- import imgcreate.fs refactoring and other changes
+  to make it work with Fedora-9 livecd-tools-0.17.1 w/o Thincrust patches
+- version 002 is for f9 branch to work with stock f9 livecd-tools
 
 * Wed Jun 11 2008 David Huff <dhuff@redhat.com> - 001-3
 - fixed dependancys
