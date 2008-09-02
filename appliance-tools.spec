@@ -5,7 +5,7 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 003
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://git.et.redhat.com/?p=act.git
@@ -47,6 +47,9 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/appcreate/*.pyc
 
 %changelog
+*Tue Aug 26 2008 David Huff <dhuff@redhat.com> - 003-3
+- release 3 fixes minor build errors 
+
 * Wed Jul 09 2008 David Huff <dhuff@redhat.com> - 003-1
 - version 003 is build for latest version of livecd-tools with patches
 
