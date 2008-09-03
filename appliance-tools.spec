@@ -36,11 +36,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc README
-%doc COPYING
+%doc README COPYING
+%doc config/aos-rawhide.ks
 %{_bindir}/appliance-creator
-%dir %{_datadir}/appliance-tools
-%{_datadir}/appliance-tools/*
 %dir %{python_sitelib}/appcreate
 %{python_sitelib}/appcreate/*.py
 %{python_sitelib}/appcreate/*.pyo
