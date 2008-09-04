@@ -39,6 +39,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc README COPYING
 %doc config/aos-rawhide.ks
 %{_bindir}/appliance-creator
+%{_bindir}/image-minimizer
 %dir %{python_sitelib}/appcreate
 %{python_sitelib}/appcreate/*.py
 %{python_sitelib}/appcreate/*.pyo

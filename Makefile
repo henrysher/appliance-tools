@@ -16,6 +16,7 @@ all:
 
 install:
 	$(INSTALL_PROGRAM) -D tools/appliance-creator $(DESTDIR)/usr/bin/appliance-creator
+	$(INSTALL_PROGRAM) -D tools/image-minimizer $(DESTDIR)/usr/bin/image-minimizer	
 	$(INSTALL_DATA) -D README $(DESTDIR)/usr/share/doc/appliance-tools-$(VERSION)/README
 	$(INSTALL_DATA) -D COPYING $(DESTDIR)/usr/share/doc/appliance-tools-$(VERSION)/COPYING
 	mkdir -p $(DESTDIR)/usr/share/appliance-tools/
@@ -25,6 +26,7 @@ install:
 
 uninstall:
 	rm -f $(DESTDIR)/usr/bin/appliance-creator
+	rm -f $(DESTDIR)/usr/bin/image-minimizer	
 	rm -rf $(DESTDIR)/usr/lib/appliance-creator
 	rm -rf $(DESTDIR)/usr/share/doc/appliance-tools-$(VERSION)
 
