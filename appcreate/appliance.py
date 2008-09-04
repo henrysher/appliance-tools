@@ -39,7 +39,7 @@ class ApplianceImageCreator(ImageCreator):
 
     """
 
-    def __init__(self, ks, name, format="raw"):
+    def __init__(self, ks, name, format, vmem, vcpu):
         """Initialize a ApplianceImageCreator instance.
 
         This method takes the same arguments as ImageCreator.__init__()
@@ -51,8 +51,8 @@ class ApplianceImageCreator(ImageCreator):
         self.__imgdir = None
         self.__format = format
         self.__disks = {}
-        self.__vmem = 512
-        self.__vcpu = 1
+        self.__vmem = vmem
+        self.__vcpu = vcpu
         
 
     def _get_fstab(self):
@@ -241,9 +241,8 @@ class ApplianceImageCreator(ImageCreator):
         subprocess.call(["sync"])
 
         stage2 = self._instroot + "/boot/grub/stage2"
-
         setup = ""
-        #for i in range(len(self.__disks)):
+       
         i = 0
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
@@ -288,11 +287,12 @@ class ApplianceImageCreator(ImageCreator):
         xml += "      <os>\n"
         xml += "        <loader dev='hd'/>\n"
         xml += "      </os>\n"
-        #for i in range(len(self.__disks)):
+        
         i = 0
         for name in self.__disks.keys():
             xml += "      <drive disk='%s-%s.%s' target='hd%s'/>\n" % (self.name,name, self.__format,chr(ord('a')+i))
             i = i + 1
+            
         xml += "    </boot>\n"
         xml += "    <devices>\n"
         xml += "      <vcpu>%s</vcpu>\n" % self.__vcpu 
@@ -302,9 +302,7 @@ class ApplianceImageCreator(ImageCreator):
         xml += "    </devices>\n"
         xml += "  </domain>\n"
         xml += "  <storage>\n"
-        #for i in range(len(self.__disks)):
         for name in self.__disks.keys():
-            # XXX don't hardcode raw
             xml += "    <disk file='%s-%s.%s' use='system' format='%s'/>\n" % (self.name,name, self.__format, self.__format)
         xml += "  </storage>\n"
         xml += "</image>\n"
@@ -313,26 +311,35 @@ class ApplianceImageCreator(ImageCreator):
         cfg = open("%s/%s.xml" % (self._outdir, self.name), "w")
         cfg.write(xml)
         cfg.close()
+        print "Wrote: %s.xml" % self.name
         
 
     def _stage_final_image(self):
         self._resparse()
-
-        self._write_image_xml()
         logging.debug("moving disks to final location")
+        
         for name in self.__disks.keys():
             dst = "%s/%s-%s.%s" % (self._outdir, self.name,name, self.__format)
-            if self.__format == "raw":
-                logging.debug("moving %s image to %s " % (self.__disks[name].lofile, dst))
-                shutil.move(self.__disks[name].lofile, dst)
-                print "Wrote: %s" % dst
-            else:
+            if self.__format != "raw":       
                 logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
                 rc = subprocess.call(["qemu-img", "convert",
-                                      "-f", "raw", self.__disks[name].lofile,
-                                      "-O", self.__format,  dst])
+                                       "-f", "raw", self.__disks[name].lofile,
+                                       "-O", self.__format,  dst])
                 if rc != 0:
-                    raise CreatorError("Unable to convert disk to %s" % (self.__format))
+                    #raise CreatorError("Unable to convert disk to %s" % (self.__format))
+                    print "reverting to raw disk image"
+                    self.__format = "raw"
+                        
+            if self.__format == "raw":  
+                #fail back to raw disks
+                dst = "%s/%s-%s.%s" % (self._outdir, self.name,name, self.__format)
+                logging.debug("moving %s image to %s " % (self.__disks[name].lofile, dst))
+                shutil.move(self.__disks[name].lofile, dst)
+                                
+            print "Wrote: %s-%s.%s" % (self.name,name, self.__format)
+            
+        self._write_image_xml()
 
+            
 
 

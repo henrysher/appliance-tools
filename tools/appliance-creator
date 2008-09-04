@@ -33,44 +33,42 @@ class Usage(Exception):
 def parse_options(args):
     parser = optparse.OptionParser()
     
-    imgopt = optparse.OptionGroup(parser, "Image options",
-                                  "These options define the created image.")
-    
-    imgopt.add_option("-c", "--config", type="string", dest="kscfg",
+    appopt = optparse.OptionGroup(parser, "Appliance options",
+                                  "These options define the created Appliance.")
+    appopt.add_option("-c", "--config", type="string", dest="kscfg",
                       help="Path to kickstart config file")
-    
-    parser.add_option("-n", "--name", type="string", dest="name",
+    appopt.add_option("-n", "--name", type="string", dest="name",
                       help="Appliance name")
-  
-    parser.add_option("-f", "--format", type="string", dest="format",
-                      help="Disk format (raw, qcow2, vmdk, ...)")
-    
-    parser.add_option_group(imgopt)
-
+    appopt.add_option("-f", "--format", type="string", dest="format", default="raw",
+                      help="Disk format (raw, qcow2, ...)")
+    appopt.add_option("", "--vmem", type="int", dest="vmem", default=512,
+                      help="amount of virtual memory for appliance in MB (default: 512)")
+    appopt.add_option("", "--vcpu", type="int", dest="vcpu", default=1,
+                      help="number of virtual cpus for appliance (default: 1)")
+    parser.add_option_group(appopt)
     
     # options related to the config of your system
     sysopt = optparse.OptionGroup(parser, "System directory options",
-                                  "These options define directories used on your system for creating the live image")
-    
-    parser.add_option("-t", "--tmpdir", type="string",
+                                  "These options define directories used on your system for creating the live image")   
+    sysopt.add_option("-t", "--tmpdir", type="string",
                       dest="tmpdir", default="/var/tmp",
                       help="Temporary directory to use (default: /var/tmp)")
-    
-    parser.add_option("", "--cache", type="string",
+    sysopt.add_option("", "--cache", type="string",
                       dest="cachedir", default=None,
                       help="Cache directory to use (default: private cache")
-    
     parser.add_option_group(sysopt)
 
     imgcreate.setup_logging(parser)
     
     (options, args) = parser.parse_args()
     
-
-    
     if not options.kscfg or not os.path.isfile(options.kscfg):
         raise Usage("Kickstart config '%s' does not exist" %(options.kscfg,))
+    
+    #if not options.format == "raw" and not options.format == "qcow2":
+    #    raise Usage("Currently only raw and qcow2 format is supported")
 
+          
     return options
 
 def main():
@@ -97,17 +95,11 @@ def main():
         logging.error("Unable to load kickstart file '%s' : %s" % (options.kscfg, e))
         return 1
 
-    disks = []
-
     name = imgcreate.build_name(options.kscfg)
     if options.name:
         name = options.name
-
-    format = "raw"
-    if options.format:
-        format = options.format
-    
-    creator = appcreate.ApplianceImageCreator(ks, name, format)
+ 
+    creator = appcreate.ApplianceImageCreator(ks, name, options.format, options.vmem, options.vcpu)
     creator.tmpdir = options.tmpdir
     
     try:
