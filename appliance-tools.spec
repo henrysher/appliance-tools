@@ -5,13 +5,13 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 003
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://git.et.redhat.com/?p=act.git
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Requires: livecd-tools >= 018
+Requires: livecd-tools >= 018 curl rsync kpartx
 BuildRequires: python
 BuildArch: noarch
 
@@ -40,12 +40,20 @@ rm -rf $RPM_BUILD_ROOT
 %doc config/aos-rawhide.ks
 %{_bindir}/appliance-creator
 %{_bindir}/image-minimizer
+%{_bindir}/ec2-converter
 %dir %{python_sitelib}/appcreate
+%dir %{python_sitelib}/ec2convert
 %{python_sitelib}/appcreate/*.py
 %{python_sitelib}/appcreate/*.pyo
 %{python_sitelib}/appcreate/*.pyc
+%{python_sitelib}/ec2convert/*.py
+%{python_sitelib}/ec2convert/*.pyo
+%{python_sitelib}/ec2convert/*.pyc
 
 %changelog
+*Thu Sep 4 2008 Joey Boggs <jboggs@redhat.com> - 003-4
+- Merged ec2-converter code
+
 *Tue Aug 26 2008 David Huff <dhuff@redhat.com> - 003-3
 - release 3 fixes minor build errors 
 

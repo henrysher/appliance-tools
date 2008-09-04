@@ -1,0 +1,147 @@
+#!/usr/bin/python -tt
+#
+# ec2-converter: Convert a virtual appliance image in an EC2 AMI
+#
+# Copyright 2008, Red Hat  Inc.
+# Joseph Boggs <jboggs@redhat.com>
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; version 2 of the License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+import os
+import sys
+import shutil
+import optparse
+import logging
+import random
+import subprocess
+import ec2convert.ec2config as ec2config
+import ec2convert.rpmcheck as rpmcheck
+import ec2convert.fs as fs
+import time
+    
+class Usage(Exception):
+    def __init__(self, msg = None, no_error = False):
+        Exception.__init__(self, msg, no_error)
+        
+        
+def parse_options(args):
+    parser = optparse.OptionParser()
+    
+    parser.add_option("-f", "--imagefile", type="string", dest="imagefile",
+                      help="Image file name")
+ 
+    parser.add_option("-n", "--imagename", type="string", dest="imagename",
+                      help="Image name")
+         
+    parser.add_option("-t", "--tmpdir", type="string",
+                      dest="tmpdir", default="/var/tmp",
+                      help="Temporary directory to use (default: /var/tmp)")
+            
+    parser.add_option("--inputtype",type="string",
+                      dest="inputtype", default=None,
+                      help="Input image type(loopbackfs, diskimage, manualdir")
+            
+    parser.add_option("--ssh",type="string",
+                      dest="ssh", default="yes",
+                      help="Configure ssh to allow remote logins, default is yes,set to no if ssh is not installed")
+
+    parser.add_option("--rpmcheck",type="string",
+                      dest="rpmcheck", default="yes",
+                      help="Perform rpm package checks, default is yes, set to no if not required")
+
+
+    (options, args) = parser.parse_args()
+
+    return options
+
+    
+def main():
+    try:
+        options = parse_options(sys.argv[1:])
+    except Usage, (msg, no_error):
+        if no_error:
+            out = sys.stdout
+            ret = 0
+        else:
+            out = sys.stderr
+            ret = 2
+        if msg:
+            print >> out, msg
+        return ret
+    
+    if os.geteuid () != 0:
+        print >> sys.stderr, "You must run as root"
+        return 1
+    
+    if not options.imagefile:
+        print >> sys.stderr, "Imagefile required to convert"
+        return 1
+    
+    imagefile = options.imagefile
+    tmpdir = options.tmpdir + "/ec2-convert-" + (''.join(random.sample('123567890abcdefghijklmnopqrstuvwxyz', 8)))
+    tmpimage = tmpdir + "-tmpimage"
+    newimage = tmpimage + "/ec2-diskimage.img"
+
+    if options.inputtype == "loopbackfs":
+        fsutil = fs.loopbackfs_image()
+
+    elif options.inputtype == "diskimage":
+        fsutil = fs.loopbackdisk_image()
+       
+    else:
+        print >> sys.stderr, "--inputtype must be defined"
+        sys.exit(1)
+
+    os.mkdir(tmpdir)
+    os.mkdir(tmpimage)
+    print >> sys.stdout, "Copying %s to %s" % (imagefile,tmpimage)
+    shutil.copy(imagefile,tmpimage)
+    fsutil.setup_fs(imagefile,tmpdir)
+
+    if options.rpmcheck == "yes":
+       rpmcheck.checkpkgs(tmpdir)
+
+    config = ec2config.ec2_modify()
+    config.makedev(tmpdir)
+    config.fstab(tmpdir)
+    config.rclocal_config(tmpdir)
+
+    if options.ssh == "yes":
+       config.ssh_config(tmpdir)
+
+    config.eth0_config(tmpdir)
+    config.ami_tools(tmpdir)
+    config.kernel_modules(tmpdir)
+    fsutil.unmount(tmpdir)
+
+
+    if options.inputtype == "loopbackfs":   
+        shutil.move(tmpimage + "/" + imagefile,newimage)
+
+    if options.imagename:
+        imagename = options.imagename + ".img"
+        shutil.move(newimage,imagename)
+    else:
+        suffix = time.strftime("%Y%m%d%H%M") + ".img"
+        imagename = "ec2-" + suffix
+        shutil.move(newimage,imagename)    
+    
+    fsutil.cleanup(tmpdir)    
+            
+    print >> sys.stdout, "\n\nEC2 Image created as %s" % imagename
+    print >> sys.stdout, "\n\nYou now need to bundle and upload the image to EC2 using the EC2 tools"
+    print >> sys.stdout, "Available at:  http://s3.amazonaws.com/ec2-downloads/ec2-ami-tools.noarch.rpm\n"
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
