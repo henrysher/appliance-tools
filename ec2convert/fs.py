@@ -94,7 +94,6 @@ class loopbackdisk_image():
             print >> sys.stdout, "Freeing loopdevices"
             os.system("kpartx -d %s" % loop_device)
             os.system("losetup -d %s" % loop_device)
-            os.remove("%s/%s" % (tmpimage,imagefile))
             return
         
     def unmount(self,tmpdir):
@@ -103,10 +102,48 @@ class loopbackdisk_image():
         return
     
     def cleanup(self,tmpdir):
-        os.rmdir(tmpdir)
-        os.rmdir(tmpdir + "-tmpimage")
-        os.rmdir(tmpdir + "-tmproot")
+        os.system("rm -rf %s/*" % tmpdir)
         return
+
+class directory_image(): 
+
+    def setup_fs(self,imagefile,tmpdir):
+            tmproot = tmpdir + "-tmproot"
+            tmpimage = tmpdir + "-tmpimage"            
+            
+            print >> sys.stdout, "\nTMPDIR: " + tmpdir
+            tmp_disk_space = os.popen("du -s %s|awk {'print $1'}" % imagefile)
+            tmp_disk_space= int(tmp_disk_space.read()) / 1024
+            print >> sys.stdout, "\nDisk Space Required: %sM" % str(tmp_disk_space)
+
+            new_disk_space = int(tmp_disk_space + ((tmp_disk_space * 0.30) + 150))
+
+            print >> sys.stdout, "\nCreating a new disk image with additional freespace: " + str(new_disk_space) + "M total"
+            create_disk = os.system("dd if=/dev/zero of=%s/ec2-diskimage.img bs=1M count=%s" % (tmpimage,new_disk_space))
+            os.system("mke2fs -Fj %s/ec2-diskimage.img" % tmpimage)
+
+            free_loop_dev = os.popen("/sbin/losetup -f")
+            loop_device = free_loop_dev.read().strip()
+
+            if not loop_device:
+                print >> sys.stderr, "Please review your loopback device settings and remove unneeded ones"
+                sys.exit(1)
+
+            os.system("mount -o loop %s/ec2-diskimage.img %s" % (tmpimage,tmpdir))
+            
+            print >> sys.stdout, "\nPerforming rsync on all partitions to new root\n"
+            os.system("rsync -u -r -a  %s/* %s" % (imagefile,tmpdir))
+            return
+        
+    def unmount(self,tmpdir):
+        logging.debug("Unmounting directory %s" % tmpdir)
+        os.system("/bin/umount %s" % tmpdir)
+        return
+    
+    def cleanup(self,tmpdir):
+        os.system("rm -rf %s/*" % tmpdir)
+        return
+
         
 class loopbackfs_image():
     
@@ -121,5 +158,5 @@ class loopbackfs_image():
         return
     
     def cleanup(self,tmpdir):
-        os.rmdir(tmpdir)
+        os.system("rm -rf %s/*" % tmpdir)
  

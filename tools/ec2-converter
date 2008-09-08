@@ -23,7 +23,6 @@ import shutil
 import optparse
 import logging
 import random
-import subprocess
 import ec2convert.ec2config as ec2config
 import ec2convert.rpmcheck as rpmcheck
 import ec2convert.fs as fs
@@ -38,7 +37,7 @@ def parse_options(args):
     parser = optparse.OptionParser()
     
     parser.add_option("-f", "--imagefile", type="string", dest="imagefile",
-                      help="Image file name")
+                      help="Image filename or directory")
  
     parser.add_option("-n", "--imagename", type="string", dest="imagename",
                       help="Image name")
@@ -49,7 +48,7 @@ def parse_options(args):
             
     parser.add_option("--inputtype",type="string",
                       dest="inputtype", default=None,
-                      help="Input image type(loopbackfs, diskimage, manualdir")
+                      help="Input image type(loopbackfs, diskimage, directory")
             
     parser.add_option("--ssh",type="string",
                       dest="ssh", default="yes",
@@ -57,7 +56,7 @@ def parse_options(args):
 
     parser.add_option("--rpmcheck",type="string",
                       dest="rpmcheck", default="yes",
-                      help="Perform rpm package checks, default is yes, set to no if not required")
+                      help="Perform rpm package checks, default is yes, set to no to override")
 
 
     (options, args) = parser.parse_args()
@@ -97,6 +96,9 @@ def main():
 
     elif options.inputtype == "diskimage":
         fsutil = fs.loopbackdisk_image()
+
+    elif options.inputtype == "directory":
+        fsutil = fs.directory_image()
        
     else:
         print >> sys.stderr, "--inputtype must be defined"
@@ -104,8 +106,11 @@ def main():
 
     os.mkdir(tmpdir)
     os.mkdir(tmpimage)
-    print >> sys.stdout, "Copying %s to %s" % (imagefile,tmpimage)
-    shutil.copy(imagefile,tmpimage)
+
+    if options.inputtype =="diskimage" or options.inputtype == "loopbackfs":
+        print >> sys.stdout, "Copying %s to %s" % (imagefile,tmpimage)
+        shutil.copy(imagefile,newimage)
+
     fsutil.setup_fs(imagefile,tmpdir)
 
     if options.rpmcheck == "yes":
@@ -123,10 +128,6 @@ def main():
     config.ami_tools(tmpdir)
     config.kernel_modules(tmpdir)
     fsutil.unmount(tmpdir)
-
-
-    if options.inputtype == "loopbackfs":   
-        shutil.move(tmpimage + "/" + imagefile,newimage)
 
     if options.imagename:
         imagename = options.imagename + ".img"
