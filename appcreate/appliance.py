@@ -297,7 +297,8 @@ class ApplianceImageCreator(ImageCreator):
         xml += "    <devices>\n"
         xml += "      <vcpu>%s</vcpu>\n" % self.__vcpu 
         xml += "      <memory>%d</memory>\n" %(self.__vmem * 1024)
-        xml += "      <interface/>\n"
+        for network in self.ks.handler.network.network: 
+            xml += "      <interface/>\n"
         xml += "      <graphics/>\n"
         xml += "    </devices>\n"
         xml += "  </domain>\n"
