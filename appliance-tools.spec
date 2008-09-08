@@ -38,6 +38,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc README COPYING
 %doc config/aos-rawhide.ks
+%{_mandir}/man*/*
 %{_bindir}/appliance-creator
 %{_bindir}/image-minimizer
 %{_bindir}/ec2-converter
