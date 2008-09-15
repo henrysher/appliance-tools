@@ -39,7 +39,7 @@ class ApplianceImageCreator(ImageCreator):
 
     """
 
-    def __init__(self, ks, name, format, vmem, vcpu):
+    def __init__(self, ks, name, format, package, vmem, vcpu):
         """Initialize a ApplianceImageCreator instance.
 
         This method takes the same arguments as ImageCreator.__init__()
@@ -53,6 +53,7 @@ class ApplianceImageCreator(ImageCreator):
         self.__disks = {}
         self.__vmem = vmem
         self.__vcpu = vcpu
+        self.__package = package
         
 
     def _get_fstab(self):
@@ -124,8 +125,8 @@ class ApplianceImageCreator(ImageCreator):
                         
         #create disk
         for item in disks:
-            logging.debug("Adding disk %s as %s/disk-%s.raws" % (item['name'], self.__imgdir, item['name']))
-            disk = SparseLoopbackDisk("%s/disk-%s.raw" % (self.__imgdir, item['name']),item['size'])
+            logging.debug("Adding disk %s as %s/%s-%s.raws" % (item['name'], self.__imgdir,self.name, item['name']))
+            disk = SparseLoopbackDisk("%s/%s-%s.raw" % (self.__imgdir,self.name, item['name']),item['size'])
             self.__disks[item['name']] = disk
 
         self.__instloop = PartitionedMount(self.__disks,
@@ -308,38 +309,58 @@ class ApplianceImageCreator(ImageCreator):
         xml += "  </storage>\n"
         xml += "</image>\n"
 
-        logging.debug("writing image XML to %s/%s.xml" %  (self._outdir, self.name))
-        cfg = open("%s/%s.xml" % (self._outdir, self.name), "w")
+        #logging.debug("writing image XML to %s/%s.xml" %  (self._outdir, self.name))
+        logging.debug("writing image XML to %s/%s.xml" %  (self.__imgdir, self.name))
+        cfg = open("%s/%s.xml" % (self.__imgdir, self.name), "w")
         cfg.write(xml)
         cfg.close()
-        print "Wrote: %s.xml" % self.name
+        #print "Wrote: %s.xml" % self.name
+        
+    def _convert_image(self):
+        #convert disk format
+        for name in self.__disks.keys():
+            dst = "%s/%s-%s.%s" % (self.__imgdir, self.name,name, self.__format)       
+            logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
+            rc = subprocess.call(["qemu-img", "convert",
+                                   "-f", "raw", self.__disks[name].lofile,
+                                   "-O", self.__format,  dst])
+            if rc == 0:
+                #remove raw file if conversion suceeds
+                logging.debug("removing %s" % (self.__disks[name].lofile))
+                os.remove(self.__disks[name].lofile)
+            if rc != 0:
+                #raise CreatorError("Unable to convert disk to %s" % (self.__for           
+                print "Unable to convert disk format to %s, using raw disk image " % self.__format
+
+    def _package_image(self):
+        #package image and metadata    
+        if self.__package == "zip":
+            #dst = "%s/%s.zip" % (self.__imgdir, self.name) tmp dir
+            dst = "%s/%s.zip" % (self._outdir, self.name)
+            files = glob.glob('%s/*' % self.__imgdir)
+            logging.debug("creating %s" %  (dst))
+            z = zipfile.ZipFile(dst, "w")
+            for file in files:
+                if file != dst:
+                    logging.debug("adding %s to %s" % (file,dst))
+                    z.write(file)
+            z.close()
         
 
     def _stage_final_image(self):
         self._resparse()
-        logging.debug("moving disks to final location")
-        
-        for name in self.__disks.keys():
-            dst = "%s/%s-%s.%s" % (self._outdir, self.name,name, self.__format)
-            if self.__format != "raw":       
-                logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
-                rc = subprocess.call(["qemu-img", "convert",
-                                       "-f", "raw", self.__disks[name].lofile,
-                                       "-O", self.__format,  dst])
-                if rc != 0:
-                    #raise CreatorError("Unable to convert disk to %s" % (self.__format))
-                    print "reverting to raw disk image"
-                    self.__format = "raw"
-                        
-            if self.__format == "raw":  
-                #fail back to raw disks
-                dst = "%s/%s-%s.%s" % (self._outdir, self.name,name, self.__format)
-                logging.debug("moving %s image to %s " % (self.__disks[name].lofile, dst))
-                shutil.move(self.__disks[name].lofile, dst)
-                                
-            print "Wrote: %s-%s.%s" % (self.name,name, self.__format)
-            
         self._write_image_xml()
+        if self.__format != "raw":
+            self._convert_image()
+        if self.__package == "none":
+            logging.debug("moving disks to final location")
+            for files in glob.glob('%s/*' % self.__imgdir):  
+                logging.debug("moving %s to %s" % (files, self._outdir))
+                shutil.move(files, self._outdir)
+        else:
+            self._package_image()
+        
+        print("done")
 
             
 
