@@ -5,13 +5,14 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 003
-Release: 4%{?dist}
+Release: 6%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://git.et.redhat.com/?p=act.git
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: livecd-tools >= 018 curl rsync kpartx
+Requires: zlib
 BuildRequires: python
 BuildArch: noarch
 
@@ -37,7 +38,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %doc README COPYING
-%doc config/aos-rawhide.ks
+%doc config/fedora-aos.ks
 %{_mandir}/man*/*
 %{_bindir}/appliance-creator
 %{_bindir}/image-minimizer
@@ -52,6 +53,13 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
+*Wed Sep 17 2008 David Huff <dhuff@redhat.com> - 003-6
+- Removed all the kickstart files in the config dir to mirror livecd-tools
+- Added the image minimization to the refactored code (BKearney)
+- multiple interface issue (#460922)
+- added --package option to specify output, currently only .zip supported
+- added --vmem and --vcpu options
+
 *Thu Sep 4 2008 Joey Boggs <jboggs@redhat.com> - 003-4
 - Merged ec2-converter code
 
