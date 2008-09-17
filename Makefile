@@ -16,7 +16,7 @@ all:
 
 man:
 	pod2man --section=8 --release="appliance-tools $(VERSION)" --center "Appliance Tools" docs/appliance-creator.pod > docs/appliance-creator.8
-
+	pod2man --section=8 --release="appliance-tools $(VERSION)" --center "Appliance Tools" docs/ec2-converter.pod > docs/ec2-converter.8
 install: man
 	$(INSTALL_PROGRAM) -D tools/appliance-creator $(DESTDIR)/usr/bin/appliance-creator
 	$(INSTALL_PROGRAM) -D tools/image-minimizer $(DESTDIR)/usr/bin/image-minimizer	
