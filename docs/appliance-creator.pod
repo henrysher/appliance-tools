@@ -40,6 +40,10 @@ Name of appliance image to be created (default based on config name)
 
 Disk format, this will take any input that qemu-img convert will take (raw, qcow2, vmdk, ...) 
 
+=item -p PACKAGE, --package=PACKAGE
+
+Packge format, will package up output, disk images and meta into a standad package.  Currnetly only zip is supported. (default is "none")
+
 =item --vmem=VMEM
 
 Amount of virtual memory for appliance in MB (default: 512)
