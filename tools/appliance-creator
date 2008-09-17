@@ -42,7 +42,7 @@ def parse_options(args):
     appopt.add_option("-f", "--format", type="string", dest="format", default="raw",
                       help="Disk format (raw, qcow2, ...)")
     appopt.add_option("-p", "--package", type="string", dest="package", default="none",
-                      help="Package format (zip, tar.gz, tar.bz2, none)")
+                      help="Package format (zip, none, ....)")
     appopt.add_option("", "--vmem", type="int", dest="vmem", default=512,
                       help="amount of virtual memory for appliance in MB (default: 512)")
     appopt.add_option("", "--vcpu", type="int", dest="vcpu", default=1,
@@ -67,7 +67,7 @@ def parse_options(args):
     if not options.kscfg or not os.path.isfile(options.kscfg):
         raise Usage("Kickstart config '%s' does not exist" %(options.kscfg,))
     
-    if options.package != "zip": #and not options.package == "tg.gz" and not options.package == "tg.bz2" and not options.package == "none":
+    if options.package != "zip" and options.package != "none":# and not options.package == "tg.bz2" and not options.package == "none":
         raise Usage("bad option %s, Currently only zip is supported" % options.package)
 
           

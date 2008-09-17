@@ -21,6 +21,7 @@ import os
 import os.path
 import glob
 import shutil
+import zipfile
 import subprocess
 import logging
 
@@ -339,17 +340,23 @@ class ApplianceImageCreator(ImageCreator):
             dst = "%s/%s.zip" % (self._outdir, self.name)
             files = glob.glob('%s/*' % self.__imgdir)
             logging.debug("creating %s" %  (dst))
-            z = zipfile.ZipFile(dst, "w")
+            z = zipfile.ZipFile(dst, "w", compression=8)
             for file in files:
                 if file != dst:
                     logging.debug("adding %s to %s" % (file,dst))
-                    z.write(file)
+                    z.write(file, arcname=os.path.basename(file), compress_type=None)
             z.close()
         
 
     def _stage_final_image(self):
         self._resparse()
         self._write_image_xml()
+        
+        #if ec2
+        
+        #if vmware
+        
+        #else        
         if self.__format != "raw":
             self._convert_image()
         if self.__package == "none":
