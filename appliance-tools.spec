@@ -5,7 +5,7 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 003
-Release: 6%{?dist}
+Release: 4%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://git.et.redhat.com/?p=act.git
@@ -53,15 +53,14 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
-*Wed Sep 17 2008 David Huff <dhuff@redhat.com> - 003-6
+*Wed Sep 17 2008 David Huff <dhuff@redhat.com> - 003-4
 - Removed all the kickstart files in the config dir to mirror livecd-tools
 - Added the image minimization to the refactored code (BKearney)
 - multiple interface issue (#460922)
+- added --format option to specity disk image format
 - added --package option to specify output, currently only .zip supported
 - added --vmem and --vcpu options
-
-*Thu Sep 4 2008 Joey Boggs <jboggs@redhat.com> - 003-4
-- Merged ec2-converter code
+- Merged ec2-converter code (jboggs)
 
 *Tue Aug 26 2008 David Huff <dhuff@redhat.com> - 003-3
 - release 3 fixes minor build errors 
