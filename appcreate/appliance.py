@@ -340,7 +340,7 @@ class ApplianceImageCreator(ImageCreator):
             dst = "%s/%s.zip" % (self._outdir, self.name)
             files = glob.glob('%s/*' % self.__imgdir)
             logging.debug("creating %s" %  (dst))
-            z = zipfile.ZipFile(dst, "w", compression=8)
+            z = zipfile.ZipFile(dst, "w", compression=8, allowZip64="True")
             for file in files:
                 if file != dst:
                     logging.debug("adding %s to %s" % (file,dst))
