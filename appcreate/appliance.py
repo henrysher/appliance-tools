@@ -21,6 +21,7 @@ import os
 import os.path
 import glob
 import shutil
+import zipfile
 import subprocess
 import logging
 
@@ -29,9 +30,6 @@ from imgcreate.fs import *
 from imgcreate.creator import *
 from appcreate.fs import *
 from appcreate.partitionedfs import *
-
-import stat
-
 
 class ApplianceImageCreator(ImageCreator):
     """Installs a system into a file containing a partitioned disk image.
@@ -43,7 +41,7 @@ class ApplianceImageCreator(ImageCreator):
 
     """
 
-    def __init__(self, ks, name, format="raw"):
+    def __init__(self, ks, name, format, package, vmem, vcpu):
         """Initialize a ApplianceImageCreator instance.
 
         This method takes the same arguments as ImageCreator.__init__()
@@ -55,8 +53,9 @@ class ApplianceImageCreator(ImageCreator):
         self.__imgdir = None
         self.__format = format
         self.__disks = {}
-        self.__vmem = 512
-        self.__vcpu = 1
+        self.__vmem = vmem
+        self.__vcpu = vcpu
+        self.__package = package
         
 
     def _get_fstab(self):
@@ -103,6 +102,8 @@ class ApplianceImageCreator(ImageCreator):
         self.__imgdir = self._mkdtemp()
         
         #list of partitions from kickstart file
+        #parts = kickstart.get_partitions(self.ks)
+        #work around since py.ks in f9 doest have get_partitions
         parts = self.ks.handler.partition.partitions
         
         #list of disks where a disk is an dict with name: and size
@@ -128,8 +129,8 @@ class ApplianceImageCreator(ImageCreator):
                         
         #create disk
         for item in disks:
-            logging.debug("Adding disk %s as %s/disk-%s.raws" % (item['name'], self.__imgdir, item['name']))
-            disk = SparseLoopbackDisk("%s/disk-%s.raw" % (self.__imgdir, item['name']),item['size'])
+            logging.debug("Adding disk %s as %s/%s-%s.raws" % (item['name'], self.__imgdir,self.name, item['name']))
+            disk = SparseLoopbackDisk("%s/%s-%s.raw" % (self.__imgdir,self.name, item['name']),item['size'])
             self.__disks[item['name']] = disk
 
         self.__instloop = PartitionedMount(self.__disks,
@@ -151,6 +152,8 @@ class ApplianceImageCreator(ImageCreator):
 
     def _create_grub_devices(self):
         devs = []
+        #parts = kickstart.get_partitions(self.ks)
+        #workaround for f9
         parts = self.ks.handler.partition.partitions
         for p in parts:
             dev = p.disk
@@ -245,9 +248,8 @@ class ApplianceImageCreator(ImageCreator):
         subprocess.call(["sync"])
 
         stage2 = self._instroot + "/boot/grub/stage2"
-
         setup = ""
-        #for i in range(len(self.__disks)):
+       
         i = 0
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
@@ -292,47 +294,86 @@ class ApplianceImageCreator(ImageCreator):
         xml += "      <os>\n"
         xml += "        <loader dev='hd'/>\n"
         xml += "      </os>\n"
-        #for i in range(len(self.__disks)):
+        
         i = 0
         for name in self.__disks.keys():
             xml += "      <drive disk='%s-%s.%s' target='hd%s'/>\n" % (self.name,name, self.__format,chr(ord('a')+i))
             i = i + 1
+            
         xml += "    </boot>\n"
         xml += "    <devices>\n"
         xml += "      <vcpu>%s</vcpu>\n" % self.__vcpu 
         xml += "      <memory>%d</memory>\n" %(self.__vmem * 1024)
-        xml += "      <interface/>\n"
+        for network in self.ks.handler.network.network: 
+            xml += "      <interface/>\n"
         xml += "      <graphics/>\n"
         xml += "    </devices>\n"
         xml += "  </domain>\n"
         xml += "  <storage>\n"
-        #for i in range(len(self.__disks)):
         for name in self.__disks.keys():
-            # XXX don't hardcode raw
             xml += "    <disk file='%s-%s.%s' use='system' format='%s'/>\n" % (self.name,name, self.__format, self.__format)
         xml += "  </storage>\n"
         xml += "</image>\n"
 
-        logging.debug("writing image XML to %s/%s.xml" %  (self._outdir, self.name))
-        cfg = open("%s/%s.xml" % (self._outdir, self.name), "w")
+        #logging.debug("writing image XML to %s/%s.xml" %  (self._outdir, self.name))
+        logging.debug("writing image XML to %s/%s.xml" %  (self.__imgdir, self.name))
+        cfg = open("%s/%s.xml" % (self.__imgdir, self.name), "w")
         cfg.write(xml)
         cfg.close()
+        #print "Wrote: %s.xml" % self.name
+        
+    def _convert_image(self):
+        #convert disk format
+        for name in self.__disks.keys():
+            dst = "%s/%s-%s.%s" % (self.__imgdir, self.name,name, self.__format)       
+            logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
+            rc = subprocess.call(["qemu-img", "convert",
+                                   "-f", "raw", self.__disks[name].lofile,
+                                   "-O", self.__format,  dst])
+            if rc == 0:
+                #remove raw file if conversion suceeds
+                logging.debug("removing %s" % (self.__disks[name].lofile))
+                os.remove(self.__disks[name].lofile)
+            if rc != 0:
+                #raise CreatorError("Unable to convert disk to %s" % (self.__for           
+                print "Unable to convert disk format to %s, using raw disk image " % self.__format
+
+    def _package_image(self):
+        #package image and metadata    
+        if self.__package == "zip":
+            #dst = "%s/%s.zip" % (self.__imgdir, self.name) tmp dir
+            dst = "%s/%s.zip" % (self._outdir, self.name)
+            files = glob.glob('%s/*' % self.__imgdir)
+            logging.debug("creating %s" %  (dst))
+            z = zipfile.ZipFile(dst, "w", compression=8, allowZip64="True")
+            for file in files:
+                if file != dst:
+                    logging.debug("adding %s to %s" % (file,dst))
+                    z.write(file, arcname=os.path.basename(file), compress_type=None)
+            z.close()
         
 
     def _stage_final_image(self):
         self._resparse()
-
         self._write_image_xml()
-        logging.debug("moving disks to final location")
-        for name in self.__disks.keys():
-            dst = "%s/%s-%s.%s" % (self._outdir, self.name,name, self.__format)
-            if self.__format == "raw":
-                logging.debug("moving %s image to %s " % (self.__disks[name].lofile, dst))
-                shutil.move(self.__disks[name].lofile, dst)
-            else:
-                logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
-                rc = subprocess.call(["qemu-img", "convert",
-                                      "-f", "raw", self.__disks[name].lofile,
-                                      "-O", self.__format,  dst])
-                if rc != 0:
-                    raise CreatorError("Unable to convert disk to %s" % (self.__format))
+        
+        #if ec2
+        
+        #if vmware
+        
+        #else        
+        if self.__format != "raw":
+            self._convert_image()
+        if self.__package == "none":
+            logging.debug("moving disks to final location")
+            for files in glob.glob('%s/*' % self.__imgdir):  
+                logging.debug("moving %s to %s" % (files, self._outdir))
+                shutil.move(files, self._outdir)
+        else:
+            self._package_image()
+        
+        print("done")
+
+            
+
+
