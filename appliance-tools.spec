@@ -5,13 +5,14 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 002
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://thincrust.net
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: livecd-tools >= 017.1
+Requires: zlib
 BuildRequires: python
 BuildArch: noarch
 
@@ -36,17 +37,21 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc README
-%doc COPYING
+%doc README COPYING
+%doc config/fedora9-aos.ks
+%{_mandir}/man*/*
 %{_bindir}/appliance-creator
-%dir %{_datadir}/appliance-tools
-%{_datadir}/appliance-tools/*
+%{_bindir}/image-minimizer
 %dir %{python_sitelib}/appcreate
 %{python_sitelib}/appcreate/*.py
 %{python_sitelib}/appcreate/*.pyo
 %{python_sitelib}/appcreate/*.pyc
 
 %changelog
+* Wed Sep 24 2008 David Huff <dhuff@redhat.com> 002-2
+- refactored code to match upsteaem project
+- backported new features from upsteam version 003-4
+
 * Wed Jul 09 2008 Alan Pevec <apevec@redhat.com> 002-1
 - import imgcreate.fs refactoring and other changes
   to make it work with Fedora-9 livecd-tools-0.17.1 w/o Thincrust patches

@@ -1,4 +1,3 @@
-
 VERSION = 002
 
 INSTALL = /usr/bin/install -c
@@ -15,24 +14,30 @@ PYTHONDIR := $(shell python -c "import distutils.sysconfig as d; print d.get_pyt
 
 all: 
 
-install:
+man:
+	pod2man --section=8 --release="appliance-tools $(VERSION)" --center "Appliance Tools" docs/appliance-creator.pod > docs/appliance-creator.8
+
+install: man
 	$(INSTALL_PROGRAM) -D tools/appliance-creator $(DESTDIR)/usr/bin/appliance-creator
+	$(INSTALL_PROGRAM) -D tools/image-minimizer $(DESTDIR)/usr/bin/image-minimizer
 	$(INSTALL_DATA) -D README $(DESTDIR)/usr/share/doc/appliance-tools-$(VERSION)/README
 	$(INSTALL_DATA) -D COPYING $(DESTDIR)/usr/share/doc/appliance-tools-$(VERSION)/COPYING
 	mkdir -p $(DESTDIR)/usr/share/appliance-tools/
-	$(INSTALL_DATA) -D config/*.ks $(DESTDIR)/usr/share/appliance-tools/
 	mkdir -p $(DESTDIR)/$(PYTHONDIR)/appcreate
 	$(INSTALL_PYTHON) -D appcreate/*.py $(DESTDIR)/$(PYTHONDIR)/appcreate/
 	$(call COMPILE_PYTHON,$(DESTDIR)/$(PYTHONDIR)/appcreate)
+	mkdir -p $(DESTDIR)/usr/share/man/man8
+	$(INSTALL_DATA) -D docs/*.8 $(DESTDIR)/usr/share/man/man8
 
 uninstall:
 	rm -f $(DESTDIR)/usr/bin/appliance-creator
+	rm -f $(DESTDIR)/usr/bin/image-minimizer
 	rm -rf $(DESTDIR)/usr/lib/appliance-creator
 	rm -rf $(DESTDIR)/usr/share/doc/appliance-tools-$(VERSION)
-	rm -rf $(DESTDIR)/usr/share/appliance-tools
+
 
 dist : all
 	git-archive --format=tar --prefix=appliance-tools-$(VERSION)/ HEAD | bzip2 -9v > appliance-tools-$(VERSION).tar.bz2
 
 clean:
-	rm -f *~ creator/*~ installer/*~ config/*~
+	rm -f *~ creator/*~ installer/*~ docs/*.8
