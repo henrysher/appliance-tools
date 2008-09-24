@@ -28,13 +28,14 @@ creator API as well as patches to the LIVECD API originally written by Daniel P.
 
 2. CREATING AN APPLIANCE IMAGE
 
-To create an appliance image, the applinace-creator tool is used. Super user
-privileges are needed. The tool is more or less self-documenting, use
+To create an appliance image, the applinace-creator tool is used. Super user privileges are needed. The tool is more or less self-documenting, use
 the --help option to see options.
 
+Build the applinace, this used the example kickstart file included inthe rpm others are available in the spin KickstartPool
+# appliance-creator -n ThinCrust --config /usr/share/doc/appliance-tools-%{version}/aos-rawhide.ks
 
-
-
+Run using libvirt (requires libvirt virt-manager libvirt-python python-virtinst)
+# virt-image ThinCrust.xml
 
 
 

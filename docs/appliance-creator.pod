@@ -1,0 +1,118 @@
+=pod
+
+=head1 NAME
+
+appliance-creator, creates pre-installed appliance images and meta-data.
+
+=head1 SYNOPSIS
+
+B<appliance-creator> [OPTIONS]
+
+=head1 DESCRIPTION
+
+B<appliance-creator> creates pre-installed appliance images from kickstart files. Kickstart files contain the information about packages and configurations that are built into the image.
+
+=head1 OPTIONS
+
+=over 4
+
+=item -h, --help
+
+Shows a help message and exits.
+
+=back
+
+=head1 IMAGE OPTIONS
+
+These options define the created appliance image.
+
+=over 4
+
+=item -c KSCFG, --config=KSCFG
+
+Path to kickstart config file
+
+=item -n NAME, --name=NAME 
+
+Name of appliance image to be created (default based on config name)
+
+=item -f FORMAT, --format=FORMAT
+
+Disk format, this will take any input that qemu-img convert will take (raw, qcow2, vmdk, ...) 
+
+=item -p PACKAGE, --package=PACKAGE
+
+Packge format, will package up output, disk images and meta into a standad package.  Currnetly only zip is supported. (default is "none")
+
+=item --vmem=VMEM
+
+Amount of virtual memory for appliance in MB (default: 512)
+
+=item --vcpu=VCPU
+
+Number of virtual cpus for appliance (default: 1)
+
+=back
+
+=head1 SYSTEM DIRECTORY OPTIONS
+
+These options define directories used on your system for creating the appliance image
+
+=over 4
+
+=item -t TMPDIR, --tmpdir=TMPDIR
+
+Temporary directory to use (default: /var/tmp)
+
+=item --cache=CACHEDIR
+
+Cache directory to use (default: private cache)
+
+=back
+
+=head1 Debugging options
+
+These options define extra options for debugging 
+
+=over 4
+
+=item -d, --debug 
+
+Output debugging information
+
+=item -v, --verbose
+
+Output verbose progress information
+
+=item --logfile=FILE
+
+Save debug information to FILE
+
+=back
+
+=head1 EXAMPLES
+
+Appliance Example
+
+appliance-creator \
+ -n ThinCrust
+--config /usr/share/doc/appliance-tools-%{version}/aos-rawhide.ks \
+--cache=/var/tmp/act
+
+=head1 CONTRIBUTORS
+
+David Huff, Joey Boggs, Bryan kearney, Daniel P. Berrange, and a team of other contributors.
+
+=head1 BUGS
+
+Report bugs to the mailing list C<http://www.redhat.com/mailman/listinfo/thincrust-devel-list> or directly to BugZilla C<http://bugzilla.redhat.com/bugzilla/> against the C<Fedora> product, and the C<appliance-tools> component. 
+
+=head1 COPYRIGHT
+
+Copyright (C) Fedora Project 2008, and various contributors. This is free software. You may redistribute copies of it under the terms of the GNU General Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent permitted by law. 
+
+=head1 SEE ALSO
+
+C<qemu-img(1)>,project website C<http://thincrust.org/>
+
+=cut
