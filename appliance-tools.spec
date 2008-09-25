@@ -5,7 +5,7 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 002
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://thincrust.net
@@ -13,6 +13,7 @@ Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: livecd-tools >= 017.1
 Requires: zlib
+Requires: qemu-img
 BuildRequires: python
 BuildArch: noarch
 
