@@ -335,8 +335,7 @@ class ApplianceImageCreator(ImageCreator):
                 logging.debug("removing %s" % (self.__disks[name].lofile))
                 os.remove(self.__disks[name].lofile)
             if rc != 0:
-                #raise CreatorError("Unable to convert disk to %s" % (self.__for           
-                print "Unable to convert disk format to %s, using raw disk image " % self.__format
+                raise CreatorError("Unable to convert disk to %s" % self.__format)
 
     def _package_image(self):
         #package image and metadata    
