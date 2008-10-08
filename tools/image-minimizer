@@ -47,10 +47,12 @@ class ImageMinimizer:
                 files.add(os.path.join(root, name))
             
     def add_pattern(self, files, pattern):
-        if os.path.isdir(pattern):
-            self.add_directory(files, pattern)
-        else:
-            files.update(glob.glob(pattern))
+        globs = glob.glob(pattern)
+        for g in globs:
+            if os.path.isdir(g):
+                self.add_directory(files, g)
+            else:
+                files.add(g)
 
     # Parses each line in the ifle
     def parse_line(self, line):
