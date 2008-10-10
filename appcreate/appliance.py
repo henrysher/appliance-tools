@@ -332,22 +332,10 @@ class ApplianceImageCreator(ImageCreator):
             if rc != 0:
                 raise CreatorError("Unable to convert disk to %s" % self.__format)
 
-    def _package_image(self):
-        #package image and metadata    
-        if self.__package == "zip":
-            #dst = "%s/%s.zip" % (self.__imgdir, self.name) tmp dir
-            dst = "%s/%s.zip" % (self._outdir, self.name)
-            files = glob.glob('%s/*' % self.__imgdir)
-            logging.debug("creating %s" %  (dst))
-            z = zipfile.ZipFile(dst, "w", compression=8, allowZip64="True")
-            for file in files:
-                if file != dst:
-                    logging.debug("adding %s to %s" % (file,dst))
-                    z.write(file, arcname=os.path.basename(file), compress_type=None)
-            z.close()
-        
 
     def _stage_final_image(self):
+        """Stage the final system image in _outdir.
+        """
         self._resparse()
         self._write_image_xml()
         
@@ -358,16 +346,40 @@ class ApplianceImageCreator(ImageCreator):
         #else        
         if self.__format != "raw":
             self._convert_image()
+        
+        if self.__package == "zip":
+            dst = "%s/%s.zip" % (self._outdir, self.name)
+            files = glob.glob('%s/*' % self.__imgdir)
+            logging.debug("creating %s" %  (dst))
+            z = zipfile.ZipFile(dst, "w", compression=8, allowZip64="True")
+            for file in files:
+                if file != dst:
+                    logging.debug("adding %s to %s" % (file,dst))
+                    z.write(file, arcname=os.path.basename(file), compress_type=None)
+            z.close()
+        
         if self.__package == "none":
             logging.debug("moving disks to final location")
             for files in glob.glob('%s/*' % self.__imgdir):  
-                logging.debug("moving %s to %s" % (files, self._outdir))
-                shutil.move(files, self._outdir)
-        else:
-            self._package_image()
-        
-        print("done")
-
-            
+                logging.debug("moving %s to %s/%s" % (files, self._outdir, os.path.basename(files)))
+                try:
+                    os.rename(files, '%s/%s' % (self._outdir, os.path.basename(files)))
+                except Exception, e:
+                    shutil.move(files, '%s/%s' % (self._outdir, os.path.basename(files)))
+                
 
 
+    def package(self, destdir):
+        """Prepares the created image for final delivery.
+        """
+        self._stage_final_image()         
+
+        for f in os.listdir(self._outdir):
+            try:
+                os.rename(os.path.join(self._outdir, f),
+                            os.path.join(destdir, f))
+            except Exception, e:
+                shutil.move(os.path.join(self._outdir, f),
+                            os.path.join(destdir, f))
+                
+        print "Finished"
