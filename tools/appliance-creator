@@ -99,7 +99,12 @@ def main():
 
     name = imgcreate.build_name(options.kscfg)
     if options.name:
-        name = options.name
+        if os.path.dirname(options.name):
+            destdir=os.path.dirname(options.name)
+            name=os.path.basename(options.name)
+        else:
+            name = options.name
+            destdir = "."
  
     creator = appcreate.ApplianceImageCreator(ks, name, options.format, options.package, options.vmem, options.vcpu)
     creator.tmpdir = options.tmpdir
@@ -109,7 +114,7 @@ def main():
         creator.install()
         creator.configure()
         creator.unmount()
-        creator.package()    
+        creator.package(destdir)    
     except imgcreate.CreatorError, e:
         logging.error("Unable to create appliance : %s" % e)
         return 1
