@@ -130,7 +130,7 @@ def main():
     fsutil.unmount(tmpdir)
 
     if options.imagename:
-        imagename = options.imagename + ".img"
+        imagename = options.imagename
         shutil.move(newimage,imagename)
     else:
         suffix = time.strftime("%Y%m%d%H%M") + ".img"
