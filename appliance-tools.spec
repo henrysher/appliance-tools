@@ -5,7 +5,7 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 002
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://thincrust.net
@@ -49,7 +49,12 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/appcreate/*.pyc
 
 %changelog
-* Wed Sep 24 2008 David Huff <dhuff@redhat.com> 002-2
+* Mon Oct 13 2008 David Huff <dhuff@redhat.com> 002-4
+- fix for problem with long move operations (#466278)
+- support patterns in directory names (apevec)
+- fix exit upon error when converting disk formats (#464798)
+
+* Wed Sep 24 2008 David Huff <dhuff@redhat.com> 002-3
 - refactored code to match upsteaem project
 - backported new features from upsteam version 003-4
 
