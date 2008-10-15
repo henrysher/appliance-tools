@@ -1,0 +1,101 @@
+=pod
+
+=head1 NAME
+
+ec2-converter, creates ready to bundle EC2 AMI disk images for Amazon's EC2.
+
+=head1 SYNOPSIS
+
+B<ec2-converter> [OPTIONS]
+
+=head1 DESCRIPTION
+
+B<ec2-converter> creates creates ready to bundle EC2 AMI disk images for Amazon's EC2.
+
+=head1 OPTIONS
+
+=over 4
+
+=item -h, --help
+
+Shows a help message and exits.
+
+=back
+
+=head1 IMAGE OPTIONS
+
+These options define the converted EC2 AMI image.
+
+=over 4
+
+=item -f IMAGEFILE --imagefile=IMAGEFILE
+
+Image filename or directory to convert
+
+=item -n IMAGENAME, --imagename=IMAGENAME 
+
+Name of EC2 AMI image to be created (default based on config name)
+
+=item --inputtype=INPUTTYPE
+
+Input image type valid options are: (loopbackfs, diskimage, directory)
+
+=item --ssh=(yes/no)
+
+Configure ssh to allow remote logins, default is yes,set to no if ssh is not installed
+
+=item  --rpmcheck=(yes/no)
+
+Perform rpm package checks (curl/openssh-server), default is yes, set to no to override
+
+=back
+
+=head1 SYSTEM DIRECTORY OPTIONS
+
+These options define directories used on your system for creating the AMI image
+
+=over 4
+
+=item -t TMPDIR, --tmpdir=TMPDIR
+
+Temporary directory to use (default: /var/tmp)
+
+=item --cache=CACHEDIR
+
+Cache directory to use (default: private cache)
+
+=back
+
+
+=head1 EXAMPLES
+
+Convert a partitioned disk image created by appliance-creator
+
+    ec2-converter -f testimage.raw --inputtype=diskimage
+
+Convert a loopback filesystem image
+
+    ec2-converter -f /tmp/testimage.img --inputtype=loopbackfs
+
+Convert a directory containing a root filesystem
+
+    ec2-converter -f /tmp/directory --inputtype=directory
+
+
+=head1 CONTRIBUTORS
+
+Joey Boggs <jboggs@redhat.com>
+
+=head1 BUGS
+
+Report bugs to the mailing list C<http://www.redhat.com/mailman/listinfo/thincrust-devel-list> or directly to BugZilla C<http://bugzilla.redhat.com/bugzilla/> against the C<Fedora> product, and the C<appliance-tools> component. 
+
+=head1 COPYRIGHT
+
+Copyright (C) Fedora Project 2008, and various contributors. This is free software. You may redistribute copies of it under the terms of the GNU General Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent permitted by law. 
+
+=head1 SEE ALSO
+
+project website C<http://thincrust.org/>
+
+=cut

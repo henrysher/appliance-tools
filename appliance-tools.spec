@@ -5,13 +5,13 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 002
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://thincrust.net
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Requires: livecd-tools >= 017.1
+Requires: livecd-tools >= 017.1 curl rsync kpartx
 Requires: zlib
 Requires: qemu-img
 BuildRequires: python
@@ -43,12 +43,20 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man*/*
 %{_bindir}/appliance-creator
 %{_bindir}/image-minimizer
+%{_bindir}/ec2-converter
 %dir %{python_sitelib}/appcreate
+%dir %{python_sitelib}/ec2convert
 %{python_sitelib}/appcreate/*.py
 %{python_sitelib}/appcreate/*.pyo
 %{python_sitelib}/appcreate/*.pyc
+%{python_sitelib}/ec2convert/*.py
+%{python_sitelib}/ec2convert/*.pyo
+%{python_sitelib}/ec2convert/*.pyc
 
 %changelog
+* Wed Oct 15 2008 Joey Boggs <jboggs@redhat.com> 002-5
+- backported ec2 converter code
+
 * Mon Oct 13 2008 David Huff <dhuff@redhat.com> 002-4
 - fix for problem with long move operations (#466278)
 - support patterns in directory names (apevec)
