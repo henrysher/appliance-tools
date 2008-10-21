@@ -47,6 +47,8 @@ def parse_options(args):
                       help="amount of virtual memory for appliance in MB (default: 512)")
     appopt.add_option("", "--vcpu", type="int", dest="vcpu", default=1,
                       help="number of virtual cpus for appliance (default: 1)")
+    appopt.add_option("", "--generate-checksum", action="store_true", dest="checksum",
+                      help=("Generate a checksum for the created appliance"))
     parser.add_option_group(appopt)
     
     # options related to the config of your system
@@ -106,7 +108,7 @@ def main():
             name = options.name
             destdir = "."
  
-    creator = appcreate.ApplianceImageCreator(ks, name, options.format, options.package, options.vmem, options.vcpu)
+    creator = appcreate.ApplianceImageCreator(ks, name, options.format, options.package, options.vmem, options.vcpu, options.checksum)
     creator.tmpdir = options.tmpdir
     
     try:

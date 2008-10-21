@@ -29,6 +29,7 @@ from imgcreate.errors import *
 from imgcreate.fs import *
 from imgcreate.creator import *
 from appcreate.partitionedfs import *
+import urlgrabber.progress as progress
 
 class ApplianceImageCreator(ImageCreator):
     """Installs a system into a file containing a partitioned disk image.
@@ -40,7 +41,7 @@ class ApplianceImageCreator(ImageCreator):
 
     """
 
-    def __init__(self, ks, name, format, package, vmem, vcpu):
+    def __init__(self, ks, name, format, package, vmem, vcpu, checksum):
         """Initialize a ApplianceImageCreator instance.
 
         This method takes the same arguments as ImageCreator.__init__()
@@ -55,6 +56,7 @@ class ApplianceImageCreator(ImageCreator):
         self.__vmem = vmem
         self.__vcpu = vcpu
         self.__package = package
+        self.__checksum = checksum
         
 
     def _get_fstab(self):
@@ -289,7 +291,7 @@ class ApplianceImageCreator(ImageCreator):
         xml += "      <os>\n"
         xml += "        <loader dev='hd'/>\n"
         xml += "      </os>\n"
-        
+
         i = 0
         for name in self.__disks.keys():
             xml += "      <drive disk='%s-%s.%s' target='hd%s'/>\n" % (self.name,name, self.__format,chr(ord('a')+i))
@@ -305,8 +307,46 @@ class ApplianceImageCreator(ImageCreator):
         xml += "    </devices>\n"
         xml += "  </domain>\n"
         xml += "  <storage>\n"
-        for name in self.__disks.keys():
-            xml += "    <disk file='%s-%s.%s' use='system' format='%s'/>\n" % (self.name,name, self.__format, self.__format)
+
+        if self.__checksum is True:
+            for name in self.__disks.keys():
+                diskpath = "%s/%s-%s.%s" % (self.__imgdir,self.name,name, self.__format)
+                disk_size = os.path.getsize(diskpath)
+                meter_ct = 0
+                meter = progress.TextMeter()
+                meter.start(size=disk_size, text="Generating disk signature for %s-%s.%s" % (self.name,name,self.__format))
+                xml += "    <disk file='%s-%s.%s' use='system' format='%s'>\n" % (self.name,name, self.__format, self.__format)
+
+                try:
+                    import hashlib
+                    m1 = hashlib.sha1()
+                    m2 = hashlib.sha256()
+                except:
+                    import sha
+                    m1 = sha.new()
+                    m2 = None
+                f = open(diskpath,"r")
+                while 1:
+                    chunk = f.read(65536)
+                    if not chunk:
+                        break
+                    m1.update(chunk)
+                    if m2:
+                       m2.update(chunk)
+                    meter.update(meter_ct)
+                    meter_ct = meter_ct + 65536
+
+                sha1checksum = m1.hexdigest()
+                xml +=  """      <checksum type='sha1'>%s</checksum>\n""" % sha1checksum
+
+                if m2:
+                    sha256checksum = m2.hexdigest()
+                    xml += """      <checksum type='sha256'>%s</checksum>\n""" % sha256checksum
+                xml += "    </disk>\n"
+        else:
+            for name in self.__disks.keys():
+                xml += "    <disk file='%s-%s.%s' use='system' format='%s'/>\n" % (self.name,name, self.__format, self.__format)
+
         xml += "  </storage>\n"
         xml += "</image>\n"
 
