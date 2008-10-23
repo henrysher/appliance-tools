@@ -112,7 +112,11 @@ class ApplianceImageCreator(ImageCreator):
         disks = []
 
         for i in range(len(parts)):
-            disk = parts[i].disk
+            if parts[i].disk:
+                disk = parts[i].disk
+            else:
+                raise CreatorError("Failed to create disks, no --ondisk specified in partition line of ks file")
+                    
             size =   parts[i].size * 1024L * 1024L
             
             if len(disks) == 0:
