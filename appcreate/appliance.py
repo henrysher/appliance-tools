@@ -407,10 +407,7 @@ class ApplianceImageCreator(ImageCreator):
             logging.debug("moving disks to final location")
             for files in glob.glob('%s/*' % self.__imgdir):  
                 logging.debug("moving %s to %s/%s" % (files, self._outdir, os.path.basename(files)))
-                try:
-                    os.rename(files, '%s/%s' % (self._outdir, os.path.basename(files)))
-                except Exception, e:
-                    shutil.move(files, '%s/%s' % (self._outdir, os.path.basename(files)))
+                shutil.move(files, '%s/%s' % (self._outdir, os.path.basename(files)))
                 
 
 
@@ -420,11 +417,6 @@ class ApplianceImageCreator(ImageCreator):
         self._stage_final_image()         
 
         for f in os.listdir(self._outdir):
-            try:
-                os.rename(os.path.join(self._outdir, f),
-                            os.path.join(destdir, f))
-            except Exception, e:
-                shutil.move(os.path.join(self._outdir, f),
-                            os.path.join(destdir, f))
+            shutil.move(os.path.join(self._outdir, f),os.path.join(destdir, f))
                 
         print "Finished"
