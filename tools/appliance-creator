@@ -100,13 +100,14 @@ def main():
         return 1
 
     name = imgcreate.build_name(options.kscfg)
+    destdir = "."
     if options.name:
         if os.path.dirname(options.name):
             destdir=os.path.dirname(options.name)
             name=os.path.basename(options.name)
         else:
             name = options.name
-            destdir = "."
+            
  
     creator = appcreate.ApplianceImageCreator(ks, name, options.format, options.package, options.vmem, options.vcpu, options.checksum)
     creator.tmpdir = options.tmpdir
