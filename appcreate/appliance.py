@@ -377,7 +377,6 @@ class ApplianceImageCreator(ImageCreator):
         """Stage the final system image in _outdir.
         """
         self._resparse()
-        self._write_image_xml()
         
         #if ec2
         
@@ -386,7 +385,10 @@ class ApplianceImageCreator(ImageCreator):
         #else        
         if self.__format != "raw":
             self._convert_image()
+            
+        self._write_image_xml()    
         
+        #moving to outdir
         if self.__package == "zip":
             dst = "%s/%s.zip" % (self._outdir, self.name)
             files = glob.glob('%s/*' % self.__imgdir)
@@ -409,8 +411,9 @@ class ApplianceImageCreator(ImageCreator):
     def package(self, destdir):
         """Prepares the created image for final delivery.
         """
-        self._stage_final_image()         
-
+        self._stage_final_image()   
+               
+        #moving to destdir
         for f in os.listdir(self._outdir):
             shutil.move(os.path.join(self._outdir, f),os.path.join(destdir, f))
                 
