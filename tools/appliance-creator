@@ -120,9 +120,11 @@ def main():
         creator.package(destdir)    
     except imgcreate.CreatorError, e:
         logging.error("Unable to create appliance : %s" % e)
-        return 1
-    finally:
         creator.cleanup()
+        return 1
+    
+    creator.cleanup()
+
 
     return 0
 
