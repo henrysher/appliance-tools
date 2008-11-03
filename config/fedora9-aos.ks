@@ -7,7 +7,7 @@ timezone US/Eastern
 auth --useshadow --enablemd5
 selinux --permissive
 firewall --disabled
-bootloader --timeout=1 --append="acpi=force"
+bootloader --timeout=1 --append="acpi=force console=ttyS0,115200"
 network --bootproto=dhcp --device=eth0 --onboot=on
 services --enabled=network
 
