@@ -38,11 +38,7 @@ Name of appliance image to be created (default based on config name)
 
 =item -f FORMAT, --format=FORMAT
 
-Disk format, this will take any input that qemu-img convert will take (raw, qcow2, vmdk, ...) 
-
-=item -p PACKAGE, --package=PACKAGE
-
-Packge format, will package up output, disk images and meta into a standad package.  Currnetly only zip is supported. (default is "none")
+Disk format, this will take any input that qemu-img convert will take (raw, qcow2, vmdk, ...) Note: not all disk formats with work with all virt technologies.
 
 =item --vmem=VMEM
 
@@ -52,7 +48,31 @@ Amount of virtual memory for appliance in MB (default: 512)
 
 Number of virtual cpus for appliance (default: 1)
 
+=item --generate-checksum 
+
+Generate a checksum for the created appliance
+
 =back
+
+=head1 SYSTEM DIRECTORY OPTIONS
+
+These options define the way the created Appliance is packaged
+
+=over 4
+
+=item -p PACKAGE, --package=PACKAGE
+
+=item -i INCLUDE, --include=INCLUDE 
+
+path to a file to include in the appliance package
+
+=item -o OUTDIR, --outdir=OUTDIR 
+
+output directory
+
+=back
+
+Packge format, will package up output, disk images and meta into a standad package.  Currnetly only zip is supported. (default is "none")
 
 =head1 SYSTEM DIRECTORY OPTIONS
 
