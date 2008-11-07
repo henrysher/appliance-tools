@@ -54,6 +54,17 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
+*Fri Nov 07 2008 David Huff <dhuff@redhat.com> - 003-4
+- Added error for Incomplete partition info (#465988)
+- Fixed problem with long move operations (#466278)
+- Fixed error converting disk formats (#464798)
+- Added support for tar archives (#470292)
+- Added md5/sha256 disk signature support (jboggs)
+- Modified zip functionality can now do with or with out 64bit ext.
+- Added support for including extra file in the package (#470337)
+- Added option for -o outdir, no longer uses name
+- OutPut is now in a seprate dir under appliance name
+
 *Wed Sep 17 2008 David Huff <dhuff@redhat.com> - 003-4
 - Removed all the kickstart files in the config dir to mirror livecd-tools
 - Added the image minimization to the refactored code (BKearney)
