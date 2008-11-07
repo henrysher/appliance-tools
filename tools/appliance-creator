@@ -49,7 +49,7 @@ def parse_options(args):
                       help="amount of virtual memory for appliance in MB (default: 512)")
     appopt.add_option("", "--vcpu", type="int", dest="vcpu", default=1,
                       help="number of virtual cpus for appliance (default: 1)")
-    appopt.add_option("", "--generate-checksum", action="store_true", dest="checksum",
+    appopt.add_option("", "--checksum", action="store_true", dest="checksum",
                       help=("Generate a checksum for the created appliance"))
     appopt.add_option("-f", "--format", type="string", dest="disk_format", default="raw",
                       help="Disk format (default: raw)")

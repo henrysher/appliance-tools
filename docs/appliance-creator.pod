@@ -48,7 +48,7 @@ Amount of virtual memory for appliance in MB (default: 512)
 
 Number of virtual cpus for appliance (default: 1)
 
-=item --generate-checksum 
+=item --checksum 
 
 Generate a checksum for the created appliance
 
@@ -62,6 +62,9 @@ These options define the way the created Appliance is packaged
 
 =item -p PACKAGE, --package=PACKAGE
 
+Package format, will package up output, disk images and meta into a package.  Currently only "zip", "zip.64", "tar", "tar.gz", "tar.bz2" are supported. (default is "none")
+
+
 =item -i INCLUDE, --include=INCLUDE 
 
 path to a file to include in the appliance package
@@ -72,7 +75,6 @@ output directory
 
 =back
 
-Packge format, will package up output, disk images and meta into a standad package.  Currnetly only zip is supported. (default is "none")
 
 =head1 SYSTEM DIRECTORY OPTIONS
 
@@ -133,6 +135,7 @@ Copyright (C) Fedora Project 2008, and various contributors. This is free softwa
 
 =head1 SEE ALSO
 
-C<qemu-img(1)>,project website C<http://thincrust.org/>
+C<qemu-img(1)>,C<virt-iamge(1),C<virt-iamge(5)
+project website C<http://thincrust.org/>
 
 =cut

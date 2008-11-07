@@ -413,7 +413,7 @@ class ApplianceImageCreator(ImageCreator):
 
         if self.checksum is True:
             for name in self.__disks.keys():
-                diskpath = "%s/%s-%s.%s" % (self.__imgdir,self.name,name, self.__disk_format)
+                diskpath = "%s/%s-%s.%s" % (self._outdir,self.name,name, self.__disk_format)
                 disk_size = os.path.getsize(diskpath)
                 meter_ct = 0
                 meter = progress.TextMeter()
@@ -444,7 +444,7 @@ class ApplianceImageCreator(ImageCreator):
 
                 if m2:
                     sha256checksum = m2.hexdigest()
-                    xml += """      <checksum type='sha256'>%s</checksum>\n""" % sha25
+                    xml += """      <checksum type='sha256'>%s</checksum>\n""" % sha256checksum
                 xml += "    </disk>\n"
         else:
             for name in self.__disks.keys():
