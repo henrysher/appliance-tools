@@ -54,8 +54,17 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
-* Wed Oct 15 2008 Joey Boggs <jboggs@redhat.com> 002-5
-- backported ec2 converter code
+* Fri Nov 07 2008 David Huff <dhuff@redhat.com> - 002-5
+- backported ec2 converter code (jboggs)
+- backported features form applaince-tools-003-5
+-- Fixed problem with long move operations (#466278)
+-- Fixed error converting disk formats (#464798)
+-- Added support for tar archives (#470292)
+-- Added md5/sha256 disk signature support (jboggs)
+-- Modified zip functionality can now do with or with out 64bit ext.
+-- Added support for including extra file in the package (#470337)
+-- Added option for -o outdir, no longer uses name
+-- OutPut is now in a seprate dir under appliance name
 
 * Mon Oct 13 2008 David Huff <dhuff@redhat.com> 002-4
 - fix for problem with long move operations (#466278)

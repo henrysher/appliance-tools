@@ -22,6 +22,7 @@ import os.path
 import glob
 import shutil
 import zipfile
+import tarfile
 import subprocess
 import logging
 
@@ -42,7 +43,7 @@ class ApplianceImageCreator(ImageCreator):
 
     """
 
-    def __init__(self, ks, name, format, package, vmem, vcpu, checksum):
+    def __init__(self, ks, name, disk_format, vmem, vcpu):
         """Initialize a ApplianceImageCreator instance.
 
         This method takes the same arguments as ImageCreator.__init__()
@@ -52,12 +53,13 @@ class ApplianceImageCreator(ImageCreator):
 
         self.__instloop = None
         self.__imgdir = None
-        self.__format = format
         self.__disks = {}
         self.__vmem = vmem
         self.__vcpu = vcpu
-        self.__package = package
-        self.__checksum = checksum
+        self.__disk_format = disk_format
+        self.checksum = False
+        #self.getsource = False
+        #self.listpkg = False
         
 
     def _get_fstab(self):
@@ -285,6 +287,103 @@ class ApplianceImageCreator(ImageCreator):
 
     def _resparse(self, size = None):
         return self.__instloop.resparse(size)
+    
+    
+    
+    def package(self, destdir,package,include):
+        """Prepares the created image for final delivery.
+           Stage
+           add includes
+           package
+        """
+        self._stage_final_image()
+        
+        #add stuff
+        if include:
+            logging.debug("adding %s to %s" % (include,self._outdir))
+            shutil.copy(include, self._outdir)
+        
+        #package
+        (pkg, comp) = os.path.splitext(package)
+        if comp:
+            comp=comp.lstrip(".")
+        
+        if pkg == "zip":
+            dst = "%s/%s.zip" % (destdir, self.name)
+            files = glob.glob('%s/*' % self._outdir)
+            if comp == "64":
+                logging.debug("creating %s with ZIP64 extensions" %  (dst))
+                z = zipfile.ZipFile(dst, "w", compression=8, allowZip64="True")
+            else:
+                logging.debug("creating %s" %  (dst))
+                z = zipfile.ZipFile(dst, "w", compression=8, allowZip64="False")    
+            for file in files:
+                if file != dst:
+                    logging.debug("adding %s to %s" % (file,dst))
+                    z.write(file, arcname=os.path.join(self.name,os.path.basename(file)), compress_type=None)
+            z.close()
+                     
+        elif pkg == "tar":
+            if comp:
+                dst = "%s/%s.tar.%s" % (destdir, self.name, comp)
+            else:
+                dst = "%s/%s.tar" % (destdir, self.name)    
+            files = glob.glob('%s/*' % self._outdir)
+            logging.debug("creating %s" %  (dst))
+            tar = tarfile.open(dst, "w|"+comp)
+            for file in files:
+                logging.debug("adding %s to %s" % (file,dst))
+                tar.add(file, arcname=os.path.join(self.name,os.path.basename(file)))
+            tar.close()
+
+               
+        else:
+            dst = os.path.join(destdir, self.name)
+            logging.debug("creating destination dir: " + dst)
+            makedirs(dst)
+            for f in os.listdir(self._outdir):
+                logging.debug("moving %s to %s" % (os.path.join(self._outdir, f), os.path.join(dst, f)))
+                shutil.move(os.path.join(self._outdir, f),os.path.join(dst, f))        
+        print "Finished"
+        
+        
+        
+    def _stage_final_image(self):
+        """Stage the final system image in _outdir.
+           Convert disks
+           write meta data
+        """
+        self._resparse()
+        
+        #if disk_format is not raw convert the disk and put in _outdir     
+        if self.__disk_format != "raw":
+            self._convert_image()
+        #else move to _outdir    
+        else:
+            logging.debug("moving disks to stage location")
+            for name in self.__disks.keys():  
+                src = "%s/%s-%s.%s" % (self.__imgdir, self.name,name, self.__disk_format)
+                dst = "%s/%s-%s.%s" % (self._outdir, self.name,name, self.__disk_format)
+                logging.debug("moving %s to %s" % (src,dst))
+                shutil.move(src,dst)
+        #write meta data in stage dir
+        self._write_image_xml()    
+
+    
+        
+    def _convert_image(self):
+        #convert disk format
+        for name in self.__disks.keys():
+            dst = "%s/%s-%s.%s" % (self._outdir, self.name,name, self.__disk_format)       
+            logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
+            rc = subprocess.call(["qemu-img", "convert",
+                                   "-f", "raw", self.__disks[name].lofile,
+                                   "-O", self.__disk_format,  dst])
+            if rc == 0:
+                logging.debug("convert successful")
+            if rc != 0:
+                raise CreatorError("Unable to convert disk to %s" % self.__disk_format)
+
 
 
     def _write_image_xml(self):
@@ -303,7 +402,7 @@ class ApplianceImageCreator(ImageCreator):
 
         i = 0
         for name in self.__disks.keys():
-            xml += "      <drive disk='%s-%s.%s' target='hd%s'/>\n" % (self.name,name, self.__format,chr(ord('a')+i))
+            xml += "      <drive disk='%s-%s.%s' target='hd%s'/>\n" % (self.name,name, self.__disk_format,chr(ord('a')+i))
             i = i + 1
             
         xml += "    </boot>\n"
@@ -317,14 +416,14 @@ class ApplianceImageCreator(ImageCreator):
         xml += "  </domain>\n"
         xml += "  <storage>\n"
 
-        if self.__checksum is True:
+        if self.checksum is True:
             for name in self.__disks.keys():
-                diskpath = "%s/%s-%s.%s" % (self.__imgdir,self.name,name, self.__format)
+                diskpath = "%s/%s-%s.%s" % (self._outdir,self.name,name, self.__disk_format)
                 disk_size = os.path.getsize(diskpath)
                 meter_ct = 0
                 meter = progress.TextMeter()
-                meter.start(size=disk_size, text="Generating disk signature for %s-%s.%s" % (self.name,name,self.__format))
-                xml += "    <disk file='%s-%s.%s' use='system' format='%s'>\n" % (self.name,name, self.__format, self.__format)
+                meter.start(size=disk_size, text="Generating disk signature for %s-%s.%s" % (self.name,name,self.__disk_format))
+                xml += "    <disk file='%s-%s.%s' use='system' format='%s'>\n" % (self.name,name, self.__disk_format, self.__disk_format)
 
                 try:
                     import hashlib
@@ -354,76 +453,17 @@ class ApplianceImageCreator(ImageCreator):
                 xml += "    </disk>\n"
         else:
             for name in self.__disks.keys():
-                xml += "    <disk file='%s-%s.%s' use='system' format='%s'/>\n" % (self.name,name, self.__format, self.__format)
+                xml += "    <disk file='%s-%s.%s' use='system' format='%s'/>\n" % (self.name,name, self.__disk_format, self.__disk_format)
 
         xml += "  </storage>\n"
         xml += "</image>\n"
 
-        #logging.debug("writing image XML to %s/%s.xml" %  (self._outdir, self.name))
-        logging.debug("writing image XML to %s/%s.xml" %  (self.__imgdir, self.name))
-        cfg = open("%s/%s.xml" % (self.__imgdir, self.name), "w")
+        logging.debug("writing image XML to %s/%s.xml" %  (self._outdir, self.name))
+        cfg = open("%s/%s.xml" % (self._outdir, self.name), "w")
         cfg.write(xml)
         cfg.close()
         #print "Wrote: %s.xml" % self.name
-        
-    def _convert_image(self):
-        #convert disk format
-        for name in self.__disks.keys():
-            dst = "%s/%s-%s.%s" % (self.__imgdir, self.name,name, self.__format)       
-            logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
-            rc = subprocess.call(["qemu-img", "convert",
-                                   "-f", "raw", self.__disks[name].lofile,
-                                   "-O", self.__format,  dst])
-            if rc == 0:
-                #remove raw file if conversion suceeds
-                logging.debug("removing %s" % (self.__disks[name].lofile))
-                os.remove(self.__disks[name].lofile)
-            if rc != 0:
-                raise CreatorError("Unable to convert disk to %s" % self.__format)
-
-
-    def _stage_final_image(self):
-        """Stage the final system image in _outdir.
-        """
-        self._resparse()
-        
-        #if ec2
-        
-        #if vmware
-        
-        #else        
-        if self.__format != "raw":
-            self._convert_image()
-            
-        self._write_image_xml()    
-        
-        #moving to outdir
-        if self.__package == "zip":
-            dst = "%s/%s.zip" % (self._outdir, self.name)
-            files = glob.glob('%s/*' % self.__imgdir)
-            logging.debug("creating %s" %  (dst))
-            z = zipfile.ZipFile(dst, "w", compression=8, allowZip64="True")
-            for file in files:
-                if file != dst:
-                    logging.debug("adding %s to %s" % (file,dst))
-                    z.write(file, arcname=os.path.basename(file), compress_type=None)
-            z.close()
-        
-        if self.__package == "none":
-            logging.debug("moving disks to final location")
-            for files in glob.glob('%s/*' % self.__imgdir):  
-                logging.debug("moving %s to %s/%s" % (files, self._outdir, os.path.basename(files)))
-                shutil.move(files, '%s/%s' % (self._outdir, os.path.basename(files)))
                 
 
 
-    def package(self, destdir):
-        """Prepares the created image for final delivery.
-        """
-        self._stage_final_image()   
-               
-        #moving to destdir
-        for f in os.listdir(self._outdir):
-            shutil.move(os.path.join(self._outdir, f),os.path.join(destdir, f))
-                
-        print "Finished"
+
