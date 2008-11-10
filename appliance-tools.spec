@@ -5,7 +5,7 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 003
-Release: 5%{?dist}
+Release: 6%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://git.et.redhat.com/?p=act.git
@@ -16,6 +16,7 @@ Requires: zlib
 Requires: qemu-img
 BuildRequires: python
 BuildArch: noarch
+ExclusiveArch: %{ix86} x86_64 ppc alpha sparc armv4l noarch
 
 
 %description
@@ -54,7 +55,10 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
-*Fri Nov 07 2008 David Huff <dhuff@redhat.com> - 003-4
+*Mon Nov 10 2008 David Huff <dhuff@redhat.com> - 003-6
+- Fixed broken dependencies for specific archs where qemu is not available
+
+*Fri Nov 07 2008 David Huff <dhuff@redhat.com> - 003-5
 - Added error for Incomplete partition info (#465988)
 - Fixed problem with long move operations (#466278)
 - Fixed error converting disk formats (#464798)
