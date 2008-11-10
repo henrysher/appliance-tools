@@ -16,6 +16,7 @@ Requires: zlib
 Requires: qemu-img
 BuildRequires: python
 BuildArch: noarch
+ExclusiveArch: %{ix86} x86_64 ppc alpha sparc armv4l noarch
 
 
 %description
@@ -55,6 +56,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %changelog
 * Fri Nov 07 2008 David Huff <dhuff@redhat.com> - 002-5
+- Fixed broken dependencies for specific archs where qemu is not available
 - backported ec2 converter code (jboggs)
 - backported features form applaince-tools-003-5
 -- Fixed problem with long move operations (#466278)
