@@ -294,7 +294,18 @@ class ApplianceImageCreator(ImageCreator):
         self._stage_final_image()
         
         #add stuff
-        if include:
+        if os.path.isdir(include):
+            logging.debug("adding everything in %s to %s" % (include,self._outdir))
+            files = glob.glob('%s/*' % include)
+            for file in files:
+                add = os.path.join(include,file)
+                if os.path.isdir(add):
+                    logging.debug("adding dir %s to %s" % (add,os.path.join(self._outdir,os.path.basename(file))))
+                    shutil.copytree(add, os.path.join(self._outdir,os.path.basename(file)),symlinks=False)
+                else:
+                    logging.debug("adding %s to %s" % (add,self._outdir))
+                    shutil.copy(add, self._outdir)
+        elif include:
             logging.debug("adding %s to %s" % (include,self._outdir))
             shutil.copy(include, self._outdir)
         
@@ -314,8 +325,17 @@ class ApplianceImageCreator(ImageCreator):
                 z = zipfile.ZipFile(dst, "w", compression=8, allowZip64="False")    
             for file in files:
                 if file != dst:
-                    logging.debug("adding %s to %s" % (file,dst))
-                    z.write(file, arcname=os.path.join(self.name,os.path.basename(file)), compress_type=None)
+                    if os.path.isdir(file):
+                        #because zip sucks we cannot just add a dir 
+                         for root, dirs, dirfiles in os.walk(file):
+                             for dirfile in dirfiles:
+                                 arcfile=self.name+"/"+root[len(os.path.commonprefix((os.path.dirname(file), root)))+1:]+"/"+dirfile 
+                                 filepath=os.path.join(root,dirfile)
+                                 logging.debug("adding %s to %s" % (arcfile,dst))
+                                 z.write(filepath,arcfile, compress_type=None)
+                    else:
+                        logging.debug("adding %s to %s" % (os.path.join(self.name,os.path.basename(file)),dst))
+                        z.write(file, arcname=os.path.join(self.name,os.path.basename(file)), compress_type=None)
             z.close()
                      
         elif pkg == "tar":

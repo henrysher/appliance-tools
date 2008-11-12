@@ -67,7 +67,7 @@ Package format, will package up output, disk images and meta into a package.  Cu
 
 =item -i INCLUDE, --include=INCLUDE 
 
-path to a file to include in the appliance package
+path to a file or dir to include in the appliance package
 
 =item -o OUTDIR, --outdir=OUTDIR 
 

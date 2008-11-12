@@ -4,11 +4,15 @@
 
 Summary: Tools for building Appliances
 Name: appliance-tools
-Version: 003
-Release: 6%{?dist}
+Version: 003.1
+Release: 1%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://git.et.redhat.com/?p=act.git
+# The source for this package was pulled from upstream's vcs.  Use the
+# following commands to generate the tarball:
+#  git clone git://git.et.redhat.com/act.git; cd act 
+#  git archive --format=tar --prefix=appliance-tools-%{version} appliance-tools-%{version} | bzip2 > appliance-tools-%{version}.tar.bz2
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: livecd-tools >= 018 curl rsync kpartx
@@ -55,6 +59,10 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
+*Wed Nov 12 2008 David Huff <dhuff@redhat.com> - 003.1
+- Fixed problem with -i only taking one file, now can include a dir
+- Fixed versioning of source file
+
 *Mon Nov 10 2008 David Huff <dhuff@redhat.com> - 003-6
 - Fixed broken dependencies for specific archs where qemu is not available
 
