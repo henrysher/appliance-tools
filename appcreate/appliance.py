@@ -299,7 +299,7 @@ class ApplianceImageCreator(ImageCreator):
         self._stage_final_image()
         
         #add stuff
-        if os.path.isdir(include):
+        if include and os.path.isdir(include):
             logging.debug("adding everything in %s to %s" % (include,self._outdir))
             files = glob.glob('%s/*' % include)
             for file in files:
