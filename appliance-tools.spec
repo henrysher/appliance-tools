@@ -4,7 +4,7 @@
 
 Summary: Tools for building Appliances
 Name: appliance-tools
-Version: 003.1
+Version: 003.7
 Release: 1%{?dist}
 License: GPLv2
 Group: System Environment/Base
@@ -59,9 +59,9 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
-*Wed Nov 12 2008 David Huff <dhuff@redhat.com> - 003.1
+*Wed Nov 12 2008 David Huff <dhuff@redhat.com> - 003.7
 - Fixed problem with -i only taking one file, now can include a dir
-- Fixed versioning of source file
+- Fixed versioning of source file, ie. 003.7
 
 *Mon Nov 10 2008 David Huff <dhuff@redhat.com> - 003-6
 - Fixed broken dependencies for specific archs where qemu is not available
