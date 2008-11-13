@@ -61,7 +61,7 @@ def parse_options(args):
     pkgopt.add_option("-p", "--package", type="string", dest="package", default="none",
                       help="Package format (default: none)")
     pkgopt.add_option("-i", "--include", type="string", dest="include",
-                      help="path to a file to include in the appliance package")
+                      help="path to a file or dir to include in the appliance package")
     pkgopt.add_option("-o", "--outdir", type="string", dest="destdir",
                       help="output directory")
     parser.add_option_group(pkgopt)
@@ -85,7 +85,7 @@ def parse_options(args):
     if not options.kscfg or not os.path.isfile(options.kscfg):
         raise Usage("Kickstart config '%s' does not exist" %(options.kscfg,))
    
-    if options.include and not os.path.isfile(options.include):
+    if options.include and not os.path.isfile(options.include) and not os.path.isdir(options.include):
         raise Usage("included file '%s' does not exist" %(options.include,))
     
     #if options.type != "generic" and options.type != "libvirt" and options.type != "vmware" and options.type != "ec2":
