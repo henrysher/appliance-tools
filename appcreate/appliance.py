@@ -298,13 +298,12 @@ class ApplianceImageCreator(ImageCreator):
             logging.debug("adding everything in %s to %s" % (include,self._outdir))
             files = glob.glob('%s/*' % include)
             for file in files:
-                add = os.path.join(include,file)
-                if os.path.isdir(add):
-                    logging.debug("adding dir %s to %s" % (add,os.path.join(self._outdir,os.path.basename(file))))
-                    shutil.copytree(add, os.path.join(self._outdir,os.path.basename(file)),symlinks=False)
+                if os.path.isdir(file):
+                    logging.debug("adding dir %s to %s" % (file,os.path.join(self._outdir,os.path.basename(file))))
+                    shutil.copytree(file, os.path.join(self._outdir,os.path.basename(file)),symlinks=False)
                 else:
-                    logging.debug("adding %s to %s" % (add,self._outdir))
-                    shutil.copy(add, self._outdir)
+                    logging.debug("adding %s to %s" % (file,self._outdir))
+                    shutil.copy(file, self._outdir)
         elif include:
             logging.debug("adding %s to %s" % (include,self._outdir))
             shutil.copy(include, self._outdir)
