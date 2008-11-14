@@ -4,7 +4,7 @@
 
 Summary: Tools for building Appliances
 Name: appliance-tools
-Version: 003.8
+Version: 003.9
 Release: 1%{?dist}
 License: GPLv2
 Group: System Environment/Base
@@ -59,6 +59,9 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
+*Fri Nov 14 2008 David Huff <dhuff@redhat.com> - 003.9
+- Fixed bug in globbing files under a directory (pmyers)
+
 *Fri Nov 14 2008 David Huff <dhuff@redhat.com> - 003.8
 - Fixed bug that causes appliance-creator to stacktrace when -i is omitted (pmyers)
 
