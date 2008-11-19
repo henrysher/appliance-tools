@@ -39,6 +39,10 @@ def parse_options(args):
                       help="Path to kickstart config file")
     appopt.add_option("-n", "--name", type="string", dest="name",
                       help="Appliance name")
+    appopt.add_option("", "--version", type="string", dest="version",
+                      help="Appliance version")
+    appopt.add_option("", "--release", type="string", dest="release",
+                      help="Appliance release")
     #appopt.add_option("-a", "--appliance", type="string", dest="type",
     #                  help="Appliance Type (default: generic)")    
     #appopt.add_option("-s", "--source", type="string", dest="source",
@@ -128,6 +132,11 @@ def main():
     creator = appcreate.ApplianceImageCreator(ks, name, options.disk_format, options.vmem, options.vcpu)
     creator.tmpdir = options.tmpdir
     creator.checksum = options.checksum
+
+    if options.version:
+        creator.appliance_version = options.version
+    if options.release:
+        creator.appliance_release = options.release
     #creator.getsource = options.source
     #creator.lsitpkg = options.pkg
     
