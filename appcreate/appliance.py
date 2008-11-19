@@ -57,6 +57,8 @@ class ApplianceImageCreator(ImageCreator):
         self.__vcpu = vcpu
         self.__disk_format = disk_format
         self.checksum = False
+        self.appliance_version = None
+        self.appliance_release = None
         #self.getsource = False
         #self.listpkg = False
         
@@ -402,7 +404,13 @@ class ApplianceImageCreator(ImageCreator):
 
     def _write_image_xml(self):
         xml = "<image>\n"
-        xml += "  <name>%s</name>\n" % self.name
+
+        name_attributes = ""
+        if self.appliance_version:
+            name_attributes += " version='%s'" % self.appliance_version
+        if self.appliance_release:
+            name_attributes += " release='%s'" % self.appliance_release
+        xml += "  <name%s>%s</name>\n" % (name_attributes, self.name)
         xml += "  <domain>\n"
         # XXX don't hardcode - determine based on the kernel we installed for grub
         # baremetal vs xen
