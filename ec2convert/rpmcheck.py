@@ -38,4 +38,6 @@ def checkpkgs(tmpdir):
             logging.error("Package(s): %s not installed, exiting" % notinstalled_list)
             logging.error("Please install %s and rerun ec2-converter" % notinstalled_list)
             logging.error("Or add --rpmcheck=no option")
-            sys.exit(1)
+            return False
+            
+    return True

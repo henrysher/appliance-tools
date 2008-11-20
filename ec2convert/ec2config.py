@@ -31,6 +31,7 @@ class EC2Config():
         os.popen("/sbin/MAKEDEV -d %s/dev -x console" % tmpdir)
         os.popen("/sbin/MAKEDEV -d %s/dev -x null" % tmpdir)
         os.popen("/sbin/MAKEDEV -d %s/dev -x zero" % tmpdir)
+        return True
 
     def fstab(self,tmpdir):
         logging.info("* - Updating /etc/fstab")
@@ -46,6 +47,7 @@ class EC2Config():
         ec2_fstab += "none       /sys      sysfs   defaults        0 0\n"
         fstab.writelines(ec2_fstab)
         fstab.close()
+        return True
 
 
     def rclocal_config(self,tmpdir):
@@ -75,6 +77,7 @@ class EC2Config():
         ec2_rclocal += "echo \" + Updated ec2-ami-tools\"\n"
         rclocal.writelines(ec2_rclocal)
         rclocal.close()    
+        return True
 
     def ssh_config(self,tmpdir):
         try: 
@@ -83,13 +86,14 @@ class EC2Config():
         except IOError, (errno, strerror):
             logging.error( "%s, %s" % (strerror,sshdconfig_path))
             logging.error( "The openssh_server package must be installed to convert and function properly on EC2" )
-            sys.exit(1)
+            return False
         else:
             logging.info("* - Creating ssh configuration")
             ec2_sshdconfig = "UseDNS  no\n"
             ec2_sshdconfig +="PermitRootLogin without-password\n"
             sshdconfig.writelines(ec2_sshdconfig)
-            sshdconfig.close()    
+            sshdconfig.close()  
+        return True
 
     def eth0_config(self,tmpdir):
         try: 
@@ -99,7 +103,7 @@ class EC2Config():
             eth0 = open(eth0_path, "w")
         except IOError, (errno, strerror):
             logging.info( "%s, %s" % (strerror,eth0_path) )
-            sys.exit(1)
+            return False 
         else:
             ec2_eth0 = "ONBOOT=yes\n"
             ec2_eth0 += "DEVICE=eth0\n"
@@ -110,6 +114,7 @@ class EC2Config():
         
         logging.info("* - Prevent nosegneg errors")
         os.system("echo \"hwcap 0 nosegneg\" > %s/etc/ld.so.conf.d/nosegneg.conf" % tmpdir)    
+        return True
     
     def ami_tools(self,tmpdir):
         logging.info("Adding EC2 Tools")
@@ -124,7 +129,9 @@ class EC2Config():
             os.system("unzip -qo /tmp/ec2-api-tools-1.2-9739.zip -d /home/ec2")
         else:
             logging.error( "EC2 tools download error!")
-            sys.exit(1)
+            return False
+            
+        return True
             
     
     def kernel_modules(self,tmpdir):    
@@ -135,9 +142,12 @@ class EC2Config():
             os.system("rpm -ivh --nodeps /tmp/kernel-xen-2.6.21.7-2.fc8.i686.rpm --root=%s" % tmpdir)
         else:
             logging.error("Kernel download error!")
+            return False
+        
+        return True
 
 
-def convert(imagefile, inputtype, tmpdirectory, checkrpms, checkssh, newimagepath):
+def convert(imagefile, inputtype, tmpdirectory, checkrpms, sshconfig, newimagepath):
     tmpdir = tmpdirectory + "/ec2-convert-" + (''.join(random.sample('123567890abcdefghijklmnopqrstuvwxyz', 8)))
     tmpimage = tmpdir + "-tmpimage"
     newimage = tmpimage + "/ec2-diskimage.img"
@@ -165,19 +175,32 @@ def convert(imagefile, inputtype, tmpdirectory, checkrpms, checkssh, newimagepat
     fsutil.setup_fs(imagefile,tmpdir)
 
     if checkrpms:
-       rpmcheck.checkpkgs(tmpdir)
+        if not rpmcheck.checkpkgs(tmpdir):
+            return False 
 
     config = EC2Config()
-    config.makedev(tmpdir)
-    config.fstab(tmpdir)
-    config.rclocal_config(tmpdir)
+    # Each method returns TRUE if successful, or false if it failed
+    # We catch false and return False if we failed.
+    if not config.makedev(tmpdir):
+        return False 
+    if not config.fstab(tmpdir):
+        return False
+    if not config.rclocal_config(tmpdir):
+        return False
 
-    if checkssh:
-       config.ssh_config(tmpdir)
-
-    config.eth0_config(tmpdir)
-    config.ami_tools(tmpdir)
-    config.kernel_modules(tmpdir)
+    if not sshconfig:
+        if config.ssh_config(tmpdir):
+            return False
+    
+    if not config.eth0_config(tmpdir):
+        return False
+        
+    if not config.ami_tools(tmpdir):
+        return False
+        
+    if not config.kernel_modules(tmpdir):
+        return False
+        
     fsutil.unmount(tmpdir)
 
     shutil.move(newimage,newimagepath) 
