@@ -24,7 +24,7 @@ import sys
 import shutil
 import time
  
-class loopbackdisk_image(): 
+class LoopBackDiskImage(): 
 
     def setup_fs(self,imagefile,tmpdir):
             loop_devices = [] 
@@ -105,7 +105,7 @@ class loopbackdisk_image():
         os.system("rm -rf %s/*" % tmpdir)
         return
 
-class directory_image(): 
+class DirectoryImage(): 
 
     def setup_fs(self,imagefile,tmpdir):
             tmproot = tmpdir + "-tmproot"
@@ -145,7 +145,7 @@ class directory_image():
         return
 
         
-class loopbackfs_image():
+class LoopbackFSImage():
     
     def setup_fs(self,imagefile,tmpdir):
         logging.debug("Mounting %s to %s" % (imagefile,tmpdir))

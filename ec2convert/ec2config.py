@@ -20,8 +20,12 @@
 import os
 import sys
 import logging
+import random
+import shutil
+import ec2convert.rpmcheck as rpmcheck
+import ec2convert.fs as fs
     
-class ec2_modify:
+class EC2Config():
     
     def makedev(self,tmpdir):
         os.popen("/sbin/MAKEDEV -d %s/dev -x console" % tmpdir)
@@ -132,3 +136,52 @@ class ec2_modify:
         else:
             logging.error("Kernel download error!")
 
+
+def convert(imagefile, inputtype, tmpdirectory, checkrpms, checkssh, newimagepath):
+    tmpdir = tmpdirectory + "/ec2-convert-" + (''.join(random.sample('123567890abcdefghijklmnopqrstuvwxyz', 8)))
+    tmpimage = tmpdir + "-tmpimage"
+    newimage = tmpimage + "/ec2-diskimage.img"
+
+    if inputtype == "loopbackfs":
+        fsutil = fs.LoopbackFSImage()
+
+    elif inputtype == "diskimage":
+        fsutil = fs.LoopBackDiskImage()
+
+    elif options.inputtype == "directory":
+        fsutil = fs.DirectoryImage()
+       
+    else:
+        logging.error("No input type was provided")
+        return False
+
+    os.mkdir(tmpdir)
+    os.mkdir(tmpimage)
+
+    if inputtype =="diskimage" or inputtype == "loopbackfs":
+        logging.info("Copying %s to %s" % (imagefile,tmpimage))
+        shutil.copy(imagefile,newimage)
+
+    fsutil.setup_fs(imagefile,tmpdir)
+
+    if checkrpms:
+       rpmcheck.checkpkgs(tmpdir)
+
+    config = EC2Config()
+    config.makedev(tmpdir)
+    config.fstab(tmpdir)
+    config.rclocal_config(tmpdir)
+
+    if checkssh:
+       config.ssh_config(tmpdir)
+
+    config.eth0_config(tmpdir)
+    config.ami_tools(tmpdir)
+    config.kernel_modules(tmpdir)
+    fsutil.unmount(tmpdir)
+
+    shutil.move(newimage,newimagepath) 
+    
+    fsutil.cleanup(tmpdir)    
+    
+    return True

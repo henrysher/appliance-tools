@@ -19,14 +19,10 @@
 
 import os
 import sys
-import shutil
 import optparse
 import logging
 import imgcreate
-import random
 import ec2convert.ec2config as ec2config
-import ec2convert.rpmcheck as rpmcheck
-import ec2convert.fs as fs
 import time
     
 class Usage(Exception):
@@ -88,63 +84,30 @@ def main():
         logging.error("Imagefile required to convert")
         return 1
     
-    imagefile = options.imagefile
-    tmpdir = options.tmpdir + "/ec2-convert-" + (''.join(random.sample('123567890abcdefghijklmnopqrstuvwxyz', 8)))
-    tmpimage = tmpdir + "-tmpimage"
-    newimage = tmpimage + "/ec2-diskimage.img"
-
-    if options.inputtype == "loopbackfs":
-        fsutil = fs.loopbackfs_image()
-
-    elif options.inputtype == "diskimage":
-        fsutil = fs.loopbackdisk_image()
-
-    elif options.inputtype == "directory":
-        fsutil = fs.directory_image()
-       
-    else:
+    if not options.inputtype:
         logging.error("--inputtype must be defined")
-        sys.exit(1)
-
-    os.mkdir(tmpdir)
-    os.mkdir(tmpimage)
-
-    if options.inputtype =="diskimage" or options.inputtype == "loopbackfs":
-        logging.info("Copying %s to %s" % (imagefile,tmpimage))
-        shutil.copy(imagefile,newimage)
-
-    fsutil.setup_fs(imagefile,tmpdir)
-
-    if options.rpmcheck == "yes":
-       rpmcheck.checkpkgs(tmpdir)
-
-    config = ec2config.ec2_modify()
-    config.makedev(tmpdir)
-    config.fstab(tmpdir)
-    config.rclocal_config(tmpdir)
-
-    if options.ssh == "yes":
-       config.ssh_config(tmpdir)
-
-    config.eth0_config(tmpdir)
-    config.ami_tools(tmpdir)
-    config.kernel_modules(tmpdir)
-    fsutil.unmount(tmpdir)
-
+        return 1        
+        
     if options.imagename:
         imagename = options.imagename
-        shutil.move(newimage,imagename)
     else:
         suffix = time.strftime("%Y%m%d%H%M") + ".img"
-        imagename = "ec2-" + suffix
-        shutil.move(newimage,imagename)    
+        imagename = "ec2-" + suffix    
+        
+    rpmcheck = options.rpmcheck == "yes"
+    sshcheck = options.ssh == "yes"
     
-    fsutil.cleanup(tmpdir)    
-            
-    print >> sys.stdout, "\n\nEC2 Image created as %s" % imagename
-    print >> sys.stdout, "\n\nYou now need to bundle and upload the image to EC2 using the EC2 tools"
-    print >> sys.stdout, "Available at:  http://s3.amazonaws.com/ec2-downloads/ec2-ami-tools.noarch.rpm\n"
-    return 0
+    success = ec2config.convert(options.imagefile, options.inputtype, \
+                    options.tmpdir, rpmcheck, sshcheck, imagename)
+    
+    if success:            
+        print >> sys.stdout, "\n\nEC2 Image created as %s" % imagename
+        print >> sys.stdout, "\n\nYou now need to bundle and upload the image to EC2 using the EC2 tools"
+        print >> sys.stdout, "Available at:  http://s3.amazonaws.com/ec2-downloads/ec2-ami-tools.noarch.rpm\n"
+        return 0
+    else:
+        print >> sys.stdout, "\n Conversion failed"
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main())
