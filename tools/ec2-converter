@@ -95,10 +95,10 @@ def main():
         imagename = "ec2-" + suffix    
         
     rpmcheck = options.rpmcheck == "yes"
-    sshcheck = options.ssh == "yes"
+    sshconfig = options.ssh == "yes"
     
     success = ec2config.convert(options.imagefile, options.inputtype, \
-                    options.tmpdir, rpmcheck, sshcheck, imagename)
+                    options.tmpdir, rpmcheck, sshconfig, imagename)
     
     if success:            
         print >> sys.stdout, "\n\nEC2 Image created as %s" % imagename
@@ -106,7 +106,7 @@ def main():
         print >> sys.stdout, "Available at:  http://s3.amazonaws.com/ec2-downloads/ec2-ami-tools.noarch.rpm\n"
         return 0
     else:
-        print >> sys.stdout, "\n Conversion failed"
+        print >> sys.stdout, "\nConversion failed"
         return 1
 
 if __name__ == "__main__":
