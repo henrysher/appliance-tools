@@ -22,6 +22,7 @@ import sys
 import shutil
 import optparse
 import logging
+import imgcreate
 import random
 import ec2convert.ec2config as ec2config
 import ec2convert.rpmcheck as rpmcheck
@@ -58,6 +59,7 @@ def parse_options(args):
                       dest="rpmcheck", default="yes",
                       help="Perform rpm package checks, default is yes, set to no to override")
 
+    imgcreate.setup_logging(parser)
 
     (options, args) = parser.parse_args()
 
@@ -79,11 +81,11 @@ def main():
         return ret
     
     if os.geteuid () != 0:
-        print >> sys.stderr, "You must run as root"
+        logging.error("You must run as root")
         return 1
     
     if not options.imagefile:
-        print >> sys.stderr, "Imagefile required to convert"
+        logging.error("Imagefile required to convert")
         return 1
     
     imagefile = options.imagefile
@@ -101,14 +103,14 @@ def main():
         fsutil = fs.directory_image()
        
     else:
-        print >> sys.stderr, "--inputtype must be defined"
+        logging.error("--inputtype must be defined")
         sys.exit(1)
 
     os.mkdir(tmpdir)
     os.mkdir(tmpimage)
 
     if options.inputtype =="diskimage" or options.inputtype == "loopbackfs":
-        print >> sys.stdout, "Copying %s to %s" % (imagefile,tmpimage)
+        logging.info("Copying %s to %s" % (imagefile,tmpimage))
         shutil.copy(imagefile,newimage)
 
     fsutil.setup_fs(imagefile,tmpdir)

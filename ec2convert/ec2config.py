@@ -19,6 +19,7 @@
 
 import os
 import sys
+import logging
     
 class ec2_modify:
     
@@ -28,7 +29,7 @@ class ec2_modify:
         os.popen("/sbin/MAKEDEV -d %s/dev -x zero" % tmpdir)
 
     def fstab(self,tmpdir):
-        print "* - Updating /etc/fstab\n"
+        logging.info("* - Updating /etc/fstab")
         fstab_path = tmpdir + "/etc/fstab"
         os.system("touch " + fstab_path)
         fstab = open(fstab_path, "w")
@@ -46,7 +47,7 @@ class ec2_modify:
     def rclocal_config(self,tmpdir):
         rclocal_path = tmpdir + "/etc/rc.local"
         rclocal = open(rclocal_path, "w")
-        print "* - Creating rc.local configuration\n"
+        logging.info("* - Creating rc.local configuration\n")
         ec2_rclocal = "if [ ! -d /root/.ssh ] ; then\n"
         ec2_rclocal += "mkdir -p /root/.ssh\n"
         ec2_rclocal += "chmod 700 /root/.ssh\n"
@@ -76,11 +77,11 @@ class ec2_modify:
             sshdconfig_path = tmpdir + "/etc/ssh/sshd_config"
             sshdconfig = open(sshdconfig_path,"w")
         except IOError, (errno, strerror):
-            print "%s, %s" % (strerror,sshdconfig_path)
-            print "The openssh_server package must be installed to convert and function properly on EC2"
+            logging.error( "%s, %s" % (strerror,sshdconfig_path))
+            logging.error( "The openssh_server package must be installed to convert and function properly on EC2" )
             sys.exit(1)
         else:
-            print "* - Creating ssh configuration\n"
+            logging.info("* - Creating ssh configuration")
             ec2_sshdconfig = "UseDNS  no\n"
             ec2_sshdconfig +="PermitRootLogin without-password\n"
             sshdconfig.writelines(ec2_sshdconfig)
@@ -88,12 +89,12 @@ class ec2_modify:
 
     def eth0_config(self,tmpdir):
         try: 
-            print "* - Creating eth0 configuration\n"
+            logging.info("* - Creating eth0 configuration")
             eth0_path = tmpdir + "/etc/sysconfig/network-scripts/ifcfg-eth0"
             os.system("touch %s" % eth0_path)
             eth0 = open(eth0_path, "w")
         except IOError, (errno, strerror):
-            print "%s, %s" % (strerror,eth0_path) 
+            logging.info( "%s, %s" % (strerror,eth0_path) )
             sys.exit(1)
         else:
             ec2_eth0 = "ONBOOT=yes\n"
@@ -103,11 +104,11 @@ class ec2_modify:
             eth0.close()
             os.system("chroot %s /sbin/chkconfig network on" % tmpdir)
         
-        print "* - Prevent nosegneg errors\n"
+        logging.info("* - Prevent nosegneg errors")
         os.system("echo \"hwcap 0 nosegneg\" > %s/etc/ld.so.conf.d/nosegneg.conf" % tmpdir)    
     
     def ami_tools(self,tmpdir):
-        print "Adding EC2 Tools"
+        logging.info("Adding EC2 Tools")
         
         if os.path.isdir(tmpdir + "/home/ec2"): 
             pass
@@ -118,16 +119,16 @@ class ec2_modify:
         if ec2td == 0:
             os.system("unzip -qo /tmp/ec2-api-tools-1.2-9739.zip -d /home/ec2")
         else:
-            print "\n\n EC2 tools download error!"
+            logging.error( "EC2 tools download error!")
             sys.exit(1)
             
     
     def kernel_modules(self,tmpdir):    
-        print "Configure image for accepting the EC2 kernel" 
+        logging.info("Configure image for accepting the EC2 kernel")
     
         kd = os.system("curl -o /tmp/kernel-xen-2.6.21.7-2.fc8.i686.rpm http://kojipkgs.fedoraproject.org/packages/kernel-xen-2.6/2.6.21.7/2.fc8/i686/kernel-xen-2.6.21.7-2.fc8.i686.rpm")
         if kd == 0:
             os.system("rpm -ivh --nodeps /tmp/kernel-xen-2.6.21.7-2.fc8.i686.rpm --root=%s" % tmpdir)
         else:
-            print "\n\n Kernel download error!"
+            logging.error("Kernel download error!")
 
