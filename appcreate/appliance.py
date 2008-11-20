@@ -53,9 +53,9 @@ class ApplianceImageCreator(ImageCreator):
         self.__instloop = None
         self.__imgdir = None
         self.__disks = {}
-        self.__vmem = vmem
-        self.__vcpu = vcpu
         self.__disk_format = disk_format
+        self.vmem = vmem
+        self.vcpu = vcpu
         self.checksum = False
         self.appliance_version = None
         self.appliance_release = None
@@ -429,8 +429,8 @@ class ApplianceImageCreator(ImageCreator):
             
         xml += "    </boot>\n"
         xml += "    <devices>\n"
-        xml += "      <vcpu>%s</vcpu>\n" % self.__vcpu 
-        xml += "      <memory>%d</memory>\n" %(self.__vmem * 1024)
+        xml += "      <vcpu>%s</vcpu>\n" % self.vcpu 
+        xml += "      <memory>%d</memory>\n" %(self.vmem * 1024)
         for network in self.ks.handler.network.network: 
             xml += "      <interface/>\n"
         xml += "      <graphics/>\n"
