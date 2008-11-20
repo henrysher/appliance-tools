@@ -21,6 +21,7 @@
 
 import sys
 import os
+import logging
 
 package_list = ['openssh-server','curl']
 
@@ -32,9 +33,9 @@ def checkpkgs(tmpdir):
         if rpm.endswith("installed\n"):
             notinstalled_list += package
         else:
-          print >> sys.stderr, "%s is installed\n" % rpm.strip()
+          logging.error("%s is installed\n" % rpm.strip())
         if notinstalled_list:
-            print >> sys.stderr, "\n\nPackage(s): %s not installed, exiting" % notinstalled_list
-            print >> sys.stderr, "\nPlease install %s and rerun ec2-converter\n\n" % notinstalled_list
-            print >> sys.stderr, "\nOr add --rpmcheck=no option"
+            logging.error("Package(s): %s not installed, exiting" % notinstalled_list)
+            logging.error("Please install %s and rerun ec2-converter" % notinstalled_list)
+            logging.error("Or add --rpmcheck=no option")
             sys.exit(1)

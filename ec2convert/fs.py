@@ -32,7 +32,7 @@ class loopbackdisk_image():
             tmproot = tmpdir + "-tmproot"
             tmpimage = tmpdir + "-tmpimage"            
             
-            print >> sys.stdout, "\nTMPDIR: " + tmpdir
+            logging.debug("TMPDIR: " + tmpdir)
             free_loop_dev = os.popen("/sbin/losetup -f")
             loop_device = free_loop_dev.read().strip()
 
@@ -49,10 +49,10 @@ class loopbackdisk_image():
                 label = os.popen("e2label /dev/mapper/%s 2>&1 " % dev)
                 label = label.read().strip()
                 if label.startswith("e2label"):
-                    print >> sys.stderr, "\n\nUnable to detect partition label on %s, continuing anyways, if %s is a swap partition, no action is needed\n" % (dev,dev)          
+                    logging.error("Unable to detect partition label on %s, continuing anyways, if %s is a swap partition, no action is needed" % (dev,dev))          
                 else:    
                     loop_partition_dict[dev] = label  
-                    print dev + " : " + label
+                    logging.debug( dev + " : " + label)
 
             dev = loop_partition_dict.values()
             dev.sort()
@@ -64,34 +64,34 @@ class loopbackdisk_image():
                         ld = os.popen("/sbin/losetup -f")
                         loop_partition_device = ld.read().strip()
                         if not loop_device:
-                            print >> sys.stderr, "Please review your loopback device settings and remove unneeded ones"
+                            logging.error("Please review your loopback device settings and remove unneeded ones")
                             sys.exit(1)
                         os.system("mount -o loop /dev/mapper/%s %s%s" % (key,tmproot,value))
             
             tmp_disk_space = os.popen("du -s %s|awk {'print $1'}" % tmproot)
             tmp_disk_space= int(tmp_disk_space.read()) / 1024
-            print >> sys.stdout, "\nDisk Space Required: %sM" % str(tmp_disk_space)
+            logging.info("Disk Space Required: %sM" % str(tmp_disk_space))
 
             new_disk_space = int(tmp_disk_space + ((tmp_disk_space * 0.30) + 150))
 
-            print >> sys.stdout, "\nCreating a new disk image with additional freespace: " + str(new_disk_space) + "M total"
+            logging.info("\nCreating a new disk image with additional freespace: " + str(new_disk_space) + "M total")
             create_disk = os.system("dd if=/dev/zero of=%s/ec2-diskimage.img bs=1M count=%s" % (tmpimage,new_disk_space))
             os.system("mke2fs -Fj %s/ec2-diskimage.img" % tmpimage)
             if not loop_device:
-                print >> sys.stderr, "Please review your loopback device settings and remove unneeded ones"
+                logging.error("Please review your loopback device settings and remove unneeded ones")
                 sys.exit(1)
             os.system("mount -o loop %s/ec2-diskimage.img %s" % (tmpimage,tmpdir))
             
-            print >> sys.stdout, "\nPerforming rsync on all partitions to new root\n"
+            logging.info("Performing rsync on all partitions to new root")
             os.system("rsync -u -r -a  %s/* %s" % (tmproot,tmpdir))
 
             dev.sort(reverse=True)
 
             for value in dev:
-                print >> sys.stdout, "Unmounting %s%s" % (tmpdir,value)
+                logging.info("Unmounting %s%s" % (tmpdir,value))
                 os.system("umount %s%s" % (tmproot,value))
 
-            print >> sys.stdout, "Freeing loopdevices"
+            logging.info("Freeing loopdevices")
             os.system("kpartx -d %s" % loop_device)
             os.system("losetup -d %s" % loop_device)
             return
@@ -111,14 +111,14 @@ class directory_image():
             tmproot = tmpdir + "-tmproot"
             tmpimage = tmpdir + "-tmpimage"            
             
-            print >> sys.stdout, "\nTMPDIR: " + tmpdir
+            logging.info("TMPDIR: " + tmpdir)
             tmp_disk_space = os.popen("du -s %s|awk {'print $1'}" % imagefile)
             tmp_disk_space= int(tmp_disk_space.read()) / 1024
-            print >> sys.stdout, "\nDisk Space Required: %sM" % str(tmp_disk_space)
+            logging.info("Disk Space Required: %sM" % str(tmp_disk_space))
 
             new_disk_space = int(tmp_disk_space + ((tmp_disk_space * 0.30) + 150))
 
-            print >> sys.stdout, "\nCreating a new disk image with additional freespace: " + str(new_disk_space) + "M total"
+            logging.info("Creating a new disk image with additional freespace: " + str(new_disk_space) + "M total")
             create_disk = os.system("dd if=/dev/zero of=%s/ec2-diskimage.img bs=1M count=%s" % (tmpimage,new_disk_space))
             os.system("mke2fs -Fj %s/ec2-diskimage.img" % tmpimage)
 
@@ -126,12 +126,12 @@ class directory_image():
             loop_device = free_loop_dev.read().strip()
 
             if not loop_device:
-                print >> sys.stderr, "Please review your loopback device settings and remove unneeded ones"
+                logging.error("Please review your loopback device settings and remove unneeded ones")
                 sys.exit(1)
 
             os.system("mount -o loop %s/ec2-diskimage.img %s" % (tmpimage,tmpdir))
             
-            print >> sys.stdout, "\nPerforming rsync on all partitions to new root\n"
+            logging.info("Performing rsync on all partitions to new root")
             os.system("rsync -u -r -a  %s/* %s" % (imagefile,tmpdir))
             return
         
