@@ -86,7 +86,7 @@ def parse_options(args):
     (options, args) = parser.parse_args()
     
     #check input
-    if not options.kscfg or not os.path.isfile(options.kscfg):
+    if not options.kscfg:
         raise Usage("Kickstart config '%s' does not exist" %(options.kscfg,))
    
     if options.include and not os.path.isfile(options.include) and not os.path.isdir(options.include):
