@@ -5,7 +5,7 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 004
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://git.et.redhat.com/?p=act.git
@@ -20,7 +20,7 @@ Requires: zlib
 Requires: qemu-img
 BuildRequires: python
 BuildArch: noarch
-ExclusiveArch: %{ix86} x86_64 ppc alpha sparc armv4l noarch
+ExcludeArch: ppc64 s390 s390x
 
 
 %description
@@ -59,6 +59,9 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
+*Mon Dec 01 2008 David Huff <dhuff@redhat.com> -004-2
+- changed form ExclusiveArch to EcludeArch to fix broken deps
+
 *Mon Dec 01 2008 David Huff <dhuff@redhat.com> - 004
 - bumped version for rebuild for Python 2.6
 - Allow the user to pass in --version and --release command line paramneters (bkearney)
