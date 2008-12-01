@@ -4,7 +4,7 @@
 
 Summary: Tools for building Appliances
 Name: appliance-tools
-Version: 003.9
+Version: 004
 Release: 1%{?dist}
 License: GPLv2
 Group: System Environment/Base
@@ -59,6 +59,12 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
+*Mon Dec 01 2008 David Huff <dhuff@redhat.com> - 004
+- bumped version for rebuild for Python 2.6
+- Allow the user to pass in --version and --release command line paramneters (bkearney)
+- Patches to integrate ec2 conversion into the adk (bkeareny)
+- Allow the appliance-creator to use remote urls with the new image tools (bkearney)
+
 *Fri Nov 14 2008 David Huff <dhuff@redhat.com> - 003.9
 - Fixed bug in globbing files under a directory (pmyers)
 
