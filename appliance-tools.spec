@@ -5,7 +5,7 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 002.8
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://thincrust.net
@@ -20,8 +20,7 @@ Requires: zlib
 Requires: qemu-img
 BuildRequires: python
 BuildArch: noarch
-ExclusiveArch: %{ix86} x86_64 ppc alpha sparc armv4l noarch
-
+ExcludeArch: ppc64 s390 s390x
 
 %description
 Tools for generating appliance images on Fedora based systems including
@@ -59,6 +58,9 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
+* Tue Dec 02 2008 David Huff <dhuff@redhat.com> - 002.8-2
+- changed form ExclusiveArch to EcludeArch to fix broken deps
+
 * Mon Nov 17 2008 David Huff <dhuff@redhat.com> - 002.8
 - backported fix for bug that causes appliance-creator to stacktrace when -i is omitted (pmyers)
 
