@@ -4,7 +4,7 @@
 
 Summary: Tools for building Appliances
 Name: appliance-tools
-Version: 003.9
+Version: 003.10
 Release: 1%{?dist}
 License: GPLv2
 Group: System Environment/Base
@@ -20,7 +20,7 @@ Requires: zlib
 Requires: qemu-img
 BuildRequires: python
 BuildArch: noarch
-ExclusiveArch: %{ix86} x86_64 ppc alpha sparc armv4l noarch
+ExcludeArch: ppc64 s390 s390x
 
 
 %description
@@ -59,6 +59,15 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
+*Tue Dec 16 2008 David Huff <dhuff@redhat.com> - 003.10
+- Changed form ExclusiveArch to EcludeArch to fix broken deps
+- Allow the appliance-creator to use remote urls (bkearney)
+- Removed the system exits (bkearney)
+- Moved the real ec2 logic into a global method called convert (bkearney)
+- Modify all the ec2-creator code to use logging (bkearney)
+- Changed vmem and vcpu to be public vars
+- Allow the user to pass in --version and --release (bkearney)
+
 *Fri Nov 14 2008 David Huff <dhuff@redhat.com> - 003.9
 - Fixed bug in globbing files under a directory (pmyers)
 
