@@ -15,7 +15,7 @@ URL: http://git.et.redhat.com/?p=act.git
 #  git archive --format=tar --prefix=appliance-tools-%{version} appliance-tools-%{version} | bzip2 > appliance-tools-%{version}.tar.bz2
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Requires: livecd-tools >= 018 curl rsync kpartx
+Requires: livecd-tools >= 020 curl rsync kpartx
 Requires: zlib
 Requires: qemu-img
 BuildRequires: python

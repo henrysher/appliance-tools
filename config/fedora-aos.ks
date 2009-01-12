@@ -16,12 +16,14 @@ services --enabled=network
 # By default the root password is emptied
 #rootpw --iscrypted $1$uw6MV$m6VtUWPed4SqgoW6fKfTZ/
 
+device virtio_blk
+
 #
 # Partition Information. Change this as necessary
 # This information is used by appliance-tools but
 # not by the livecd tools.
 #
-part / --size 550 --fstype ext3 --ondisk sda
+part / --size 650 --fstype ext3 --ondisk sda
 
 #
 # Repositories

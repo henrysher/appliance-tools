@@ -54,13 +54,17 @@ class ApplianceImageCreator(ImageCreator):
         self.__imgdir = None
         self.__disks = {}
         self.__disk_format = disk_format
+        
+        #appliance parameters 
         self.vmem = vmem
         self.vcpu = vcpu
         self.checksum = False
         self.appliance_version = None
         self.appliance_release = None
-        #self.getsource = False
-        #self.listpkg = False
+        
+        #additional modules to include   
+        self.modules = ["sym53c8xx", "aic7xxx", "mptspi"]
+        self.modules.extend(kickstart.get_modules(self.ks))
         
 
     def _get_fstab(self):
@@ -87,9 +91,14 @@ class ApplianceImageCreator(ImageCreator):
     def _create_mkinitrd_config(self):
         #write  to tell which modules to be included in initrd
         
+        extramods = ""
+        for module in self.modules:
+            extramods += '%s ' % module
+            
         mkinitrd = ""
         mkinitrd += "PROBE=\"no\"\n"
         mkinitrd += "MODULES=\"ext3 ata_piix sd_mod libata scsi_mod\"\n"
+        mkinitrd += "MODULES=\"%s\"\n" % extramods
         mkinitrd += "rootfs=\"ext3\"\n"
         mkinitrd += "rootopts=\"defaults\"\n"
         
