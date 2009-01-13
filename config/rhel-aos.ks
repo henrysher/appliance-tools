@@ -16,30 +16,23 @@ services --enabled=network
 # By default the root password is emptied
 #rootpw --iscrypted $1$uw6MV$m6VtUWPed4SqgoW6fKfTZ/
 
+#add virtio modules
+device virtio_blk
+device virtio_pci
+device xennet
+device xenblk
+
 #
 # Partition Information. Change this as necessary
 # This information is used by appliance-tools but
 # not by the livecd tools.
 #
-part / --size 550 --fstype ext3 --ondisk sda
+part / --size 750 --fstype ext3 --ondisk hda
 
 #
 # Repositories
-#To compose against rawhide, use the following "repo" (enabled by default)
-repo --name=f9 --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-9&arch=$basearch
-repo --name=f9-updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f9&arch=$basearch
-
-# To compose against the current release tree, use the following "repo" (disabled by default)
-#repo --name=released --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-9&arch=$basearch
-# To include updates, use the following "repo" (enabled by default)
-#repo --name=updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f9&arch=$basearch
-
-# To compose against rawhide, use the following "repo" (disabled by default)
-#repo --name=rawhide --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=rawhide&arch=$basearch
-
-# To compose against local trees, (edit and) use:
-#repo --name=f9 --baseurl=http://localrepo/fedora/releases/9/Everything/$basearch/os/
-#repo --name=f9-updates --baseurl=http://localrepo/fedora/updates/9/$basearch/
+# repo --name=rhel --baseurl=http://path/to/your/rhel/repo/RHEL-5-Server/U3/x86_64/os/Server/
+repo --name=rhel5.3 --baseurl=http://porkchop.devel.redhat.com/released/RHEL-5-Server/U3-Beta/x86_64/os/Server/
 
 #
 # Add all the packages after the base packages
@@ -47,6 +40,7 @@ repo --name=f9-updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?
 %packages --excludedocs --nobase
 bash
 kernel
+kernel-xen
 grub
 e2fsprogs
 passwd
@@ -56,8 +50,6 @@ rootfiles
 yum
 vim-minimal
 acpid
-#needed to disable selinux
-lokkit
 
 #Allow for dhcp access
 dhclient
@@ -97,10 +89,7 @@ iputils
 -libselinux-python
 -libselinux
 
-# Things it would be nice to loose
--fedora-logos
-generic-logos
--fedora-release-notes
+
 %end
 
 #

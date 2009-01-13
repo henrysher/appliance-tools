@@ -4,8 +4,8 @@
 
 Summary: Tools for building Appliances
 Name: appliance-tools
-Version: 002.8
-Release: 2%{?dist}
+Version: 002.20
+Release: 1%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://thincrust.net
@@ -15,9 +15,9 @@ URL: http://thincrust.net
 #  git archive --format=tar --prefix=appliance-tools-%{version} appliance-tools-%{version} | bzip2 > appliance-tools-%{version}.tar.bz2
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Requires: livecd-tools >= 017.1 curl rsync kpartx
+Requires: livecd-tools >= 020 curl rsync kpartx
 Requires: zlib
-Requires: qemu-img
+#Requires: qemu-img
 BuildRequires: python
 BuildArch: noarch
 ExcludeArch: ppc64 s390 s390x
@@ -58,6 +58,9 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
+* Wed Jan 14 2009 David Huff <dhuff@redhat.com> - 002.20
+- ported for epel build 
+
 * Tue Dec 02 2008 David Huff <dhuff@redhat.com> - 002.8-2
 - changed form ExclusiveArch to EcludeArch to fix broken deps
 
