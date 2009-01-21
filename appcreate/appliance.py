@@ -32,6 +32,7 @@ from imgcreate.creator import *
 from appcreate.fs import *
 from appcreate.partitionedfs import *
 import urlgrabber.progress as progress
+import imgcreate.mayflower as mayflower
 
 class ApplianceImageCreator(ImageCreator):
     """Installs a system into a file containing a partitioned disk image.
@@ -50,16 +51,22 @@ class ApplianceImageCreator(ImageCreator):
 
         """
         ImageCreator.__init__(self, ks, name)
-
+    
         self.__instloop = None
         self.__imgdir = None
         self.__disks = {}
-        self.__vmem = vmem
-        self.__vcpu = vcpu
         self.__disk_format = disk_format
+        
+        #appliance parameters 
+        self.vmem = vmem
+        self.vcpu = vcpu
         self.checksum = False
-        #self.getsource = False
-        #self.listpkg = False
+        self.appliance_version = None
+        self.appliance_release = None
+        
+        #additional modules to include   
+        self.modules = ["sym53c8xx", "aic7xxx", "mptspi"]
+        self.modules.extend(kickstart.get_modules(self.ks))
         
 
     def _get_fstab(self):
@@ -86,15 +93,27 @@ class ApplianceImageCreator(ImageCreator):
     def _create_mkinitrd_config(self):
         #write  to tell which modules to be included in initrd
         
+        extramods = ""
+        for module in self.modules:
+            extramods += '%s ' % module
+            
+        # all scsi drivers included by anaconda
+        mods = subprocess.Popen(["/usr/lib/anaconda-runtime/modlist",
+                            "-f",
+                            "/usr/lib/anaconda-runtime/loader/module-info",
+                            "scsi"], stdout=subprocess.PIPE).communicate()[0]
+        self.modules.extend(mods.split())    
+            
         mkinitrd = ""
         mkinitrd += "PROBE=\"no\"\n"
         mkinitrd += "MODULES=\"ext3 ata_piix sd_mod libata scsi_mod\"\n"
+        mkinitrd += "MODULES=\"%s\"\n" % extramods
         mkinitrd += "rootfs=\"ext3\"\n"
         mkinitrd += "rootopts=\"defaults\"\n"
         
-        logging.debug("Writing mkinitrd config %s/etc/sysconfig/mkinitrd" % self._instroot)
-        os.makedirs(self._instroot + "/etc/sysconfig/",mode=644)
-        cfg = open(self._instroot + "/etc/sysconfig/mkinitrd", "w")
+        logging.debug("Writing mkinitrd config %s/etc/mayflower" % self._instroot)
+        os.makedirs(self._instroot + "/etc/",mode=644)
+        cfg = open(self._instroot + "/etc/mayflower.conf", "w")
         cfg.write(mkinitrd)
         cfg.close()
                        
@@ -276,6 +295,7 @@ class ApplianceImageCreator(ImageCreator):
             raise MountError("Unable to install grub bootloader")
 
     def _create_bootconfig(self):
+        mayflower.create_initramfs(self._instroot, self._chroot, self._get_kernel_versions())
         self._create_grub_devices()
         self._create_grub_config()
         self._copy_grub_files()
@@ -426,8 +446,8 @@ class ApplianceImageCreator(ImageCreator):
             
         xml += "    </boot>\n"
         xml += "    <devices>\n"
-        xml += "      <vcpu>%s</vcpu>\n" % self.__vcpu 
-        xml += "      <memory>%d</memory>\n" %(self.__vmem * 1024)
+        xml += "      <vcpu>%s</vcpu>\n" % self.vcpu 
+        xml += "      <memory>%d</memory>\n" %(self.vmem * 1024)
         for network in self.ks.handler.network.network: 
             xml += "      <interface/>\n"
         xml += "      <graphics/>\n"
