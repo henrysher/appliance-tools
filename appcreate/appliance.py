@@ -91,27 +91,26 @@ class ApplianceImageCreator(ImageCreator):
     
     
     def _create_mkinitrd_config(self):
-        #write  to tell which modules to be included in initrd
-        
-        extramods = ""
-        for module in self.modules:
-            extramods += '%s ' % module
-            
-        # all scsi drivers included by anaconda
+     
+        # hack to grab all scsi drivers included by anaconda from the host
         mods = subprocess.Popen(["/usr/lib/anaconda-runtime/modlist",
                             "-f",
                             "/usr/lib/anaconda-runtime/loader/module-info",
                             "scsi"], stdout=subprocess.PIPE).communicate()[0]
         self.modules.extend(mods.split())    
+        
+        extramods = ""
+        for module in self.modules:
+            extramods += '%s ' % module
             
         mkinitrd = ""
         mkinitrd += "PROBE=\"no\"\n"
-        mkinitrd += "MODULES=\"ext3 ata_piix sd_mod libata scsi_mod\"\n"
+        mkinitrd += "MODULES=\"ext3 ata_piix sr_mod sd_mod libata scsi_mod\"\n"
         mkinitrd += "MODULES=\"%s\"\n" % extramods
         mkinitrd += "rootfs=\"ext3\"\n"
         mkinitrd += "rootopts=\"defaults\"\n"
         
-        logging.debug("Writing mkinitrd config %s/etc/mayflower" % self._instroot)
+        logging.debug("Writing mkinitrd config %s/etc/mayflower.conf" % self._instroot)
         os.makedirs(self._instroot + "/etc/",mode=644)
         cfg = open(self._instroot + "/etc/mayflower.conf", "w")
         cfg.write(mkinitrd)
