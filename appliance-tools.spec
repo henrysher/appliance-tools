@@ -4,7 +4,7 @@
 
 Summary: Tools for building Appliances
 Name: appliance-tools
-Version: 004
+Version: 004.4
 Release: 2%{?dist}
 License: GPLv2
 Group: System Environment/Base
@@ -59,7 +59,10 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
-*Mon Dec 01 2008 David Huff <dhuff@redhat.com> -004-2
+*Mon Jul 07 2009 David Huff <dhuff@redhat.com> -004.4
+- added functionality include additional modules in ramdisk 
+
+*Mon Dec 01 2008 David Huff <dhuff@redhat.com> -004.2
 - changed form ExclusiveArch to EcludeArch to fix broken deps
 
 *Mon Dec 01 2008 David Huff <dhuff@redhat.com> - 004
