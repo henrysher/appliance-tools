@@ -62,7 +62,7 @@ class PartitionedMount(Mount):
             logging.debug("Initializing partition table for %s" % (d['disk'].device))
             rc = subprocess.call(["/sbin/parted", "-s", d['disk'].device, "mklabel", "msdos"])
             if rc != 0:
-                raise MountError("Error writing partition table on %s" % d.device)
+                raise MountError("Error writing partition table on %s" % d['disk'].device)
 
         logging.debug("Assigning partitions to disks")
         for n in range(len(self.partitions)):
@@ -104,8 +104,8 @@ class PartitionedMount(Mount):
             # XXX disabled return code check because parted always fails to
             # reload part table with loop devices. Annoying because we can't
             # distinguish this failure from real partition failures :-(
-            if rc != 0 and 1 == 0: 
-                raise MountError("Error creating partition on %s" % d['disk'].device)
+            #if rc != 0 and 1 == 0: 
+            #    raise MountError("Error creating partition on %s" % d['disk'].device)
 
     def __map_partitions(self):
         for dev in self.disks.keys():
