@@ -225,12 +225,17 @@ class ApplianceImageCreator(ImageCreator):
         for kernel in kernels:
             for version in kernels[kernel]:
                 versions.append(version)
+        
+        if int(subprocess.Popen("ls " + self._instroot + "/boot/initramfs* | wc -l", shell=True, stdout=subprocess.PIPE).communicate()[0].strip()) > 0:
+            initrd = "initramfs"
+        else:
+            initrd = "initrd"
 
         for v in versions:
             grub += "title %s (%s)\n" % (self.name, v)
             grub += "        root (hd0,%d)\n" % bootdevnum
             grub += "        kernel %s/vmlinuz-%s ro root=%s %s\n" % (prefix, v, rootdev, options)
-            grub += "        initrd %s/initrd-%s.img\n" % (prefix, v)
+            grub += "        initrd %s/%s-%s.img\n" % (prefix, initrd, v)
 
         logging.debug("Writing grub config %s/boot/grub/grub.conf" % self._instroot)
         cfg = open(self._instroot + "/boot/grub/grub.conf", "w")
