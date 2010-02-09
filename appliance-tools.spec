@@ -4,14 +4,14 @@
 
 Summary: Tools for building Appliances
 Name: appliance-tools
-Version: 004
-Release: 2%{?dist}
+Version: 004.5
+Release: 1%{?dist}
 License: GPLv2
 Group: System Environment/Base
-URL: http://git.et.redhat.com/?p=act.git
+URL: http://thincrust.org/
 # The source for this package was pulled from upstream's vcs.  Use the
 # following commands to generate the tarball:
-#  git clone git://git.et.redhat.com/act.git; cd act 
+#  git clone git://git.fedorahosted.org/appliance-tools.git
 #  git archive --format=tar --prefix=appliance-tools-%{version} appliance-tools-%{version} | bzip2 > appliance-tools-%{version}.tar.bz2
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -59,7 +59,18 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyc
 
 %changelog
-*Mon Dec 01 2008 David Huff <dhuff@redhat.com> -004-2
+* Tue Feb 09 2010 David Huff <dhuff@redhat.com> - 004.5-1
+- Fixed error while installing grub
+- Fixed issue with Fedora 12 using dracut to generate initrd
+- Fixed issue with Fedora 12 parted error
+
+* Fri Jul 24 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 004.4-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
+*Mon Jul 07 2009 David Huff <dhuff@redhat.com> -004.4
+- added functionality include additional modules in ramdisk 
+
+*Mon Dec 01 2008 David Huff <dhuff@redhat.com> -004.2
 - changed form ExclusiveArch to EcludeArch to fix broken deps
 
 *Mon Dec 01 2008 David Huff <dhuff@redhat.com> - 004
