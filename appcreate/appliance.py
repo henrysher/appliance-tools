@@ -145,12 +145,11 @@ class ApplianceImageCreator(ImageCreator):
                         
         #create disk
         for item in disks:
-            logging.debug("Adding disk %s as %s/%s-%s.raws" % (item['name'], self.__imgdir,self.name, item['name']))
+            logging.debug("Adding disk %s as %s/%s-%s.raw" % (item['name'], self.__imgdir,self.name, item['name']))
             disk = SparseLoopbackDisk("%s/%s-%s.raw" % (self.__imgdir,self.name, item['name']),item['size'])
             self.__disks[item['name']] = disk
 
-        self.__instloop = PartitionedMount(self.__disks,
-                                           self._instroot)
+        self.__instloop = PartitionedMount(self.__disks, self._instroot)
 
         for p in parts:
             self.__instloop.add_partition(int(p.size), p.disk, p.mountpoint, p.fstype)
