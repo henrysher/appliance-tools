@@ -278,7 +278,7 @@ class ApplianceImageCreator(ImageCreator):
         setup += "quit\n"
 
         logging.debug("Installing grub to %s" % loopdev)
-        grub = subprocess.Popen(["grub", "--batch", "--no-floppy"],
+        grub = subprocess.Popen(["/sbin/grub", "--batch", "--no-floppy"],
                                 stdin=subprocess.PIPE)
         grub.communicate(setup)
         rc = grub.wait()
