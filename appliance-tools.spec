@@ -5,7 +5,7 @@
 Summary: Tools for building Appliances
 Name: appliance-tools
 Version: 004.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2
 Group: System Environment/Base
 URL: http://thincrust.org/
@@ -16,7 +16,7 @@ URL: http://thincrust.org/
 Source0: %{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: livecd-tools >= 020 curl rsync kpartx
-Requires: zlib
+Requires: zlib >= 1.2.3
 Requires: qemu-img
 BuildRequires: python
 BuildArch: noarch
@@ -27,6 +27,14 @@ ExcludeArch: ppc64 s390 s390x
 Tools for generating appliance images on Fedora based systems including
 derived distributions such as RHEL, CentOS and others. See
 http://thincrust.net for more details.
+
+%package minimizer
+Summary: Tool to minimize a appliance image
+Group: System Environment/Base
+BuildArch: noarch
+
+%description minimizer
+Tool that helps remove un-wanted files
 
 %prep
 %setup -q
@@ -47,7 +55,6 @@ rm -rf $RPM_BUILD_ROOT
 %doc config/fedora-aos.ks
 %{_mandir}/man*/*
 %{_bindir}/appliance-creator
-%{_bindir}/image-minimizer
 %{_bindir}/ec2-converter
 %dir %{python_sitelib}/appcreate
 %dir %{python_sitelib}/ec2convert
@@ -58,7 +65,14 @@ rm -rf $RPM_BUILD_ROOT
 %{python_sitelib}/ec2convert/*.pyo
 %{python_sitelib}/ec2convert/*.pyc
 
+%files minimizer
+%{_bindir}/image-minimizer
+
 %changelog
+* Wed Mar 24 2010 David Huff <dhuff@redhat.com> - 004.5-2
+- Added patch to fix problems with rpmlint
+- Added sub-package for image minimizer
+
 * Tue Feb 09 2010 David Huff <dhuff@redhat.com> - 004.5-1
 - Fixed error while installing grub
 - Fixed issue with Fedora 12 using dracut to generate initrd
