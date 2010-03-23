@@ -1,5 +1,3 @@
-#!/usr/bin/python -tt
-#
 # fs.py: Convert a virtual appliance image in an EC2 AMI
 #
 # Copyright 2008, Red Hat  Inc.

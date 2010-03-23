@@ -1,5 +1,3 @@
-#!/usr/bin/python -tt
-#
 # rpmcheck.py: Convert a virtual appliance image in an EC2 AMI, checks for rpm packages
 #
 # Copyright 2008, Red Hat  Inc.
