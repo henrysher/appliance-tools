@@ -29,12 +29,12 @@ class ImageMinimizer:
     keeps = set()
     drops = set()
     visited = set()
-    
+
     def __init__(self, filename, root, dryrun):
         self.filename = filename
         self.prefix = root
         self.dryrun = dryrun
-        
+
     # Recursively adds all files and directories.
     # This is done becuase globbing does not allow
     # ** for arbitrary nesting.
@@ -45,7 +45,7 @@ class ImageMinimizer:
                 self.visited.add(os.path.join(root, dir))
             for name in items:
                 files.add(os.path.join(root, name))
-            
+
     def add_pattern(self, files, pattern):
         globs = glob.glob(pattern)
         for g in globs:
@@ -83,16 +83,16 @@ class ImageMinimizer:
                 else:
                     #print 'rm ' + tag
                     os.remove(tag)
-                    
+
         #remove all empty directory. Every 8k counts!
         for dir in sorted(self.visited, reverse=True):
             if len(os.listdir(dir)) == 0:
-                if self.dryrun:                
-                    print 'rm -rf ' + dir  
+                if self.dryrun:
+                    print 'rm -rf ' + dir
                 else:
-                    #print 'rm -rf ' + dir 
-                    os.rmdir(dir)     
-        
+                    #print 'rm -rf ' + dir
+                    os.rmdir(dir)
+
     def filter(self):
         for line in (open(self.filename).readlines()):
             self.parse_line(line.strip())
@@ -104,17 +104,17 @@ def parse_options(args):
     usage = "usage: %prog [options] filename"
     parser = optparse.OptionParser(usage=usage)
     parser.set_defaults(root=os.environ.get('INSTALL_ROOT'), dry_run=False)
-    
+
     parser.add_option("-i", "--installroot", type="string", dest="root",
         help="Root path to prepend to all patterns. Defaults to INSTALL_ROOT")
-        
+
     parser.add_option("--dryrun", action="store_true", dest="dryrun",
-        help="If set, no filesystem changes are made.")        
-        
+        help="If set, no filesystem changes are made.")
+
     #imgcreate.setup_logging(parser)
-    
+
     return parser.parse_args()
-       
+
 
 if __name__ == "__main__":
     try:
