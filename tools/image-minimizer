@@ -1,8 +1,8 @@
 #!/usr/bin/python
 #
-# imageminimizer: removes files on the filesystem
+# image-minimizer: removes files and packages on the filesystem
 #
-# Copyright 2007, Red Hat  Inc.
+# Copyright 2007-2010 Red Hat  Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ import optparse
 import os
 import shutil
 import sys
+import rpm
 
 class ImageMinimizer:
     filename = ''
@@ -30,12 +31,16 @@ class ImageMinimizer:
     keeps = set()
     drops = set()
     visited = set()
+    keeps_rpm = set()
+    drops_rpm = set()
+    ts = None
 
     def __init__(self, filename, root, dryrun, verbose):
         self.filename = filename
         self.prefix = root
         self.dryrun = dryrun
         self.verbose = verbose
+        self.ts = None
 
     # Recursively adds all files and directories.
     # This is done becuase globbing does not allow
@@ -50,18 +55,34 @@ class ImageMinimizer:
 
     def add_pattern(self, files, pattern):
         globs = glob.glob(pattern)
+        if self.verbose and len(globs) == 0:
+            print "%s file not found" % pattern
         for g in globs:
             if os.path.isdir(g):
                 self.add_directory(files, g)
             else:
                 files.add(g)
 
+    def add_pattern_rpm(self, rpms, pattern):
+        if self.ts is None:
+            if self.prefix is None:
+                raise Exception ('Must specify installation root for droprpm/keeprpm')
+            self.ts = rpm.TransactionSet(self.prefix)
+        mi = self.ts.dbMatch()
+        mi.pattern('name', rpm.RPMMIRE_GLOB, pattern)
+        not_found = True
+        for hdr in mi:
+            not_found = False
+            rpms.add(hdr['name'])
+        if self.verbose and not_found:
+            print "%s package not found" % pattern
+
     # Parses each line in the ifle
     def parse_line(self, line):
         tup = line.partition(' ')
         command = tup[0].lower()
-        pattern = tup[2].strip()
-        if not self.prefix == None:
+        pattern = pattern_orig = tup[2].strip()
+        if self.prefix is not None:
             pattern = pattern.lstrip('/')
             pattern = os.path.join(self.prefix, pattern)
 
@@ -71,6 +92,10 @@ class ImageMinimizer:
                 self.add_pattern(self.keeps, pattern)
             elif command == 'drop':
                 self.add_pattern(self.drops, pattern)
+            elif command == 'keeprpm':
+                self.add_pattern_rpm(self.keeps_rpm, pattern_orig)
+            elif command == 'droprpm':
+                self.add_pattern_rpm(self.drops_rpm, pattern_orig)
             else:
                 raise Exception ('Unknown Command: ' + command)
 
@@ -97,11 +122,31 @@ class ImageMinimizer:
                         print 'rm -rf ' + dir
                     os.rmdir(dir)
 
+    def remove_rpm(self, rpms):
+
+        def runCallback(reason, amount, total, key, client_data):
+            if self.verbose and reason == rpm.RPMCALLBACK_UNINST_STOP:
+                print key, "erased"
+
+        if len(rpms) == 0:
+            return
+
+        for pkg in rpms:
+            if self.dryrun:
+                print "erasing ", pkg
+            else:
+                self.ts.addErase(pkg)
+        if not self.dryrun:
+            # skip ts.check(), equivalent to --nodeps
+            self.ts.run(runCallback, "erase")
+
     def filter(self):
         for line in (open(self.filename).readlines()):
             self.parse_line(line.strip())
         final = self.drops.difference(self.keeps)
         self.remove(final)
+        final_rpm = self.drops_rpm.difference(self.keeps_rpm)
+        self.remove_rpm(final_rpm)
 
 
 def parse_options():
@@ -111,7 +156,7 @@ def parse_options():
     parser.set_defaults(root=os.environ.get('INSTALL_ROOT'), dry_run=False)
 
     parser.add_option("-i", "--installroot", type="string", dest="root",
-        help="Root path to prepend to all patterns. Defaults to INSTALL_ROOT")
+        help="Root path to prepend to all file patterns and installation root for RPM operations.  Defaults to INSTALL_ROOT")
 
     parser.add_option("--dryrun", action="store_true", dest="dryrun",
         help="If set, no filesystem changes are made.")
