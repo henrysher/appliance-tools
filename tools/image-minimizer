@@ -25,15 +25,17 @@ import sys
 class ImageMinimizer:
     filename = ''
     dryrun = False
+    verbose = False
     prefix = None
     keeps = set()
     drops = set()
     visited = set()
 
-    def __init__(self, filename, root, dryrun):
+    def __init__(self, filename, root, dryrun, verbose):
         self.filename = filename
         self.prefix = root
         self.dryrun = dryrun
+        self.verbose = verbose
 
     # Recursively adds all files and directories.
     # This is done becuase globbing does not allow
@@ -81,7 +83,8 @@ class ImageMinimizer:
                 if self.dryrun:
                     print 'rm ' + tag
                 else:
-                    #print 'rm ' + tag
+                    if self.verbose:
+                        print 'rm ' + tag
                     os.remove(tag)
 
         #remove all empty directory. Every 8k counts!
@@ -90,7 +93,8 @@ class ImageMinimizer:
                 if self.dryrun:
                     print 'rm -rf ' + dir
                 else:
-                    #print 'rm -rf ' + dir
+                    if self.verbose:
+                        print 'rm -rf ' + dir
                     os.rmdir(dir)
 
     def filter(self):
@@ -100,9 +104,10 @@ class ImageMinimizer:
         self.remove(final)
 
 
-def parse_options(args):
+def parse_options():
     usage = "usage: %prog [options] filename"
     parser = optparse.OptionParser(usage=usage)
+
     parser.set_defaults(root=os.environ.get('INSTALL_ROOT'), dry_run=False)
 
     parser.add_option("-i", "--installroot", type="string", dest="root",
@@ -111,16 +116,23 @@ def parse_options(args):
     parser.add_option("--dryrun", action="store_true", dest="dryrun",
         help="If set, no filesystem changes are made.")
 
-    #imgcreate.setup_logging(parser)
+    parser.add_option("-v", "--verbose", action="store_true", dest="verbose",
+        help="Display every action as it is performed.")
 
-    return parser.parse_args()
+    (options, args) = parser.parse_args()
+    if len(args) == 0:
+        parser.print_help()
+        sys.exit(1)
+
+    return (options, args)
 
 
 if __name__ == "__main__":
     try:
-        (options, args) = parse_options(sys.argv[1:])
+        (options, args) = parse_options()
         filename = args[0]
-        minimizer = ImageMinimizer(filename, options.root, options.dryrun)
+        minimizer = ImageMinimizer(filename, options.root, options.dryrun,
+                                    options.verbose)
         minimizer.filter()
     except SystemExit, e:
         sys.exit(e.code)
