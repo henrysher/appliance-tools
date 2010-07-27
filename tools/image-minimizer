@@ -28,10 +28,8 @@ class ImageMinimizer:
     dryrun = False
     verbose = False
     prefix = None
-    keeps = set()
     drops = set()
     visited = set()
-    keeps_rpm = set()
     drops_rpm = set()
     ts = None
 
@@ -89,18 +87,24 @@ class ImageMinimizer:
         # Strip out all the comments and blank lines
         if not (command.startswith('#') or command==''):
             if command == 'keep':
-                self.add_pattern(self.keeps, pattern)
+                keeps = set()
+                self.add_pattern(keeps, pattern)
+                self.drops.difference_update(keeps)
+                keeps = None
             elif command == 'drop':
                 self.add_pattern(self.drops, pattern)
             elif command == 'keeprpm':
-                self.add_pattern_rpm(self.keeps_rpm, pattern_orig)
+                keeps_rpm = set()
+                self.add_pattern_rpm(keeps_rpm, pattern_orig)
+                self.drops_rpm.difference_update(keeps_rpm)
+                keeps_rpm = None
             elif command == 'droprpm':
                 self.add_pattern_rpm(self.drops_rpm, pattern_orig)
             else:
                 raise Exception ('Unknown Command: ' + command)
 
-    def remove(self, files):
-        for tag in sorted(files, reverse=True):
+    def remove(self):
+        for tag in sorted(self.drops, reverse=True):
             self.visited.add(os.path.split(tag)[0])
             if os.path.isdir(tag):
                 self.visited.add(tag)
@@ -122,16 +126,16 @@ class ImageMinimizer:
                         print 'rm -rf ' + dir
                     os.rmdir(dir)
 
-    def remove_rpm(self, rpms):
+    def remove_rpm(self):
 
         def runCallback(reason, amount, total, key, client_data):
             if self.verbose and reason == rpm.RPMCALLBACK_UNINST_STOP:
                 print key, "erased"
 
-        if len(rpms) == 0:
+        if len(self.drops_rpm) == 0:
             return
 
-        for pkg in rpms:
+        for pkg in self.drops_rpm:
             if self.dryrun:
                 print "erasing ", pkg
             else:
@@ -143,10 +147,8 @@ class ImageMinimizer:
     def filter(self):
         for line in (open(self.filename).readlines()):
             self.parse_line(line.strip())
-        final = self.drops.difference(self.keeps)
-        self.remove(final)
-        final_rpm = self.drops_rpm.difference(self.keeps_rpm)
-        self.remove_rpm(final_rpm)
+        self.remove()
+        self.remove_rpm()
 
 
 def parse_options():
