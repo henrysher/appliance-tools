@@ -77,29 +77,36 @@ class ImageMinimizer:
 
     # Parses each line in the ifle
     def parse_line(self, line):
-        tup = line.partition(' ')
-        command = tup[0].lower()
-        pattern = pattern_orig = tup[2].strip()
-        if self.prefix is not None:
-            pattern = pattern.lstrip('/')
-            pattern = os.path.join(self.prefix, pattern)
+        command = ""
+        pattern = ""
+        tok = line.split(None,1)
+        if len(tok) > 0:
+            command = tok[0].lower()
+            if len(tok) > 1:
+                pattern = tok[1].strip()
 
         # Strip out all the comments and blank lines
         if not (command.startswith('#') or command==''):
             if command == 'keep':
+                if self.prefix is not None :
+                    pattern = pattern.lstrip('/')
+                    pattern = os.path.join(self.prefix, pattern)
                 keeps = set()
                 self.add_pattern(keeps, pattern)
                 self.drops.difference_update(keeps)
                 keeps = None
             elif command == 'drop':
+                if self.prefix is not None :
+                    pattern = pattern.lstrip('/')
+                    pattern = os.path.join(self.prefix, pattern)
                 self.add_pattern(self.drops, pattern)
             elif command == 'keeprpm':
                 keeps_rpm = set()
-                self.add_pattern_rpm(keeps_rpm, pattern_orig)
+                self.add_pattern_rpm(keeps_rpm, pattern)
                 self.drops_rpm.difference_update(keeps_rpm)
                 keeps_rpm = None
             elif command == 'droprpm':
-                self.add_pattern_rpm(self.drops_rpm, pattern_orig)
+                self.add_pattern_rpm(self.drops_rpm, pattern)
             else:
                 raise Exception ('Unknown Command: ' + command)
 
