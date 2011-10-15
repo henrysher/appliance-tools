@@ -65,7 +65,9 @@ class ApplianceImageCreator(ImageCreator):
         #additional modules to include   
         self.modules = ["sym53c8xx", "aic7xxx", "mptspi"]
         self.modules.extend(kickstart.get_modules(self.ks))
-        
+
+        # This determines which partition layout we'll be using
+        self.grub = None
 
     def _get_fstab(self):
         s = ""
@@ -149,7 +151,23 @@ class ApplianceImageCreator(ImageCreator):
             disk = SparseLoopbackDisk("%s/%s-%s.raw" % (self.__imgdir,self.name, item['name']),item['size'])
             self.__disks[item['name']] = disk
 
-        self.__instloop = PartitionedMount(self.__disks, self._instroot)
+        # Search for grub package in package list
+        packages = kickstart.get_packages(self.ks)
+        # Default partition layout is msdos
+        # Only when grub2 is installed we'll switch to gpt
+        partition_layout = 'msdos'
+
+        # TODO: this most probably needs to be changed because we're not
+        # resolving packages from package groups
+        if 'grub2' in packages:
+            self.grub = 'grub2'
+            partition_layout = 'gpt'
+        elif 'grub' in packages:
+            self.grub = 'grub'
+
+        self.__instloop = PartitionedMount(self.__disks,
+                                           self._instroot,
+                                           partition_layout)
 
         for p in parts:
             self.__instloop.add_partition(int(p.size), p.disk, p.mountpoint, p.fstype)
@@ -160,10 +178,6 @@ class ApplianceImageCreator(ImageCreator):
             raise CreatorError("Failed mount disks : %s" % e)
         
         self._create_mkinitrd_config()
-
-
-    def _get_required_packages(self):
-        return ["grub"]
 
     def _create_grub_devices(self):
         devs = []
@@ -278,18 +292,65 @@ class ApplianceImageCreator(ImageCreator):
         setup += "quit\n"
 
         logging.debug("Installing grub to %s" % loopdev)
-        grub = subprocess.Popen(["/sbin/grub", "--batch", "--no-floppy"],
+
+        if os.path.exists('/sbin/grub'):
+            logging.debug("Using host provided GRUB.")
+            grubcommand = "/sbin/grub"
+        else:
+            logging.warning("GRUB executable wasn't found on host; trying to use GRUB from image.")
+            grubcommand = self._instroot + "/sbin/grub"
+
+        grub = subprocess.Popen([grubcommand, "--batch", "--no-floppy"],
                                 stdin=subprocess.PIPE)
         grub.communicate(setup)
         rc = grub.wait()
         if rc != 0:
             raise MountError("Unable to install grub bootloader")
 
+    def _install_grub2(self):
+        i = 0
+        for name in self.__disks.keys():
+            loopdev = self.__disks[name].device
+            i =i+1
+
+        devmap = "(hd0) %s\n" % loopdev
+
+        cfg = open(self._instroot + "/boot/grub2/device.map", "w")
+        cfg.write(devmap)
+        cfg.close()
+
+        logging.debug("Installing grub2 to %s" % loopdev)
+
+        if os.path.exists('/sbin/grub2-install'):
+            logging.debug("Using host provided grub2-install.")
+            grubcommand = "/sbin/grub2-install"
+        else:
+            logging.warning("grub2-install executable wasn't found on host; trying to use it from image.")
+            grubcommand = self._instroot + "/sbin/grub2-install"
+
+        rc = subprocess.call([grubcommand, "--no-floppy", "--root-directory=" + self._instroot, "--grub-mkdevicemap=" + self._instroot + "/boot/grub2/device.map", loopdev])
+
+        if rc != 0:
+            raise MountError("Unable to install grub2 bootloader")
+
+        # TODO: Generate /boot/grub2/grub.cfg file here!!!
+
     def _create_bootconfig(self):
-        self._create_grub_devices()
-        self._create_grub_config()
-        self._copy_grub_files()
-        self._install_grub()
+        if self.grub == 'grub2':
+            # We have GRUB2 package installed
+            # Most probably this is Fedora 16+
+            logging.debug("Found GRUB2 package.")
+            self._install_grub2()
+        elif self.grub == 'grub':
+            # We have GRUB Legacy installed
+            logging.debug("Found GRUB Legacy package.")
+            self._create_grub_devices()
+            self._create_grub_config()
+            self._copy_grub_files()
+            self._install_grub()
+        else:
+            # No GRUB package is available
+            logging.warning("No GRUB package found. Image will be not bootable until you do some post processing.")
 
     def _unmount_instroot(self):
         if not self.__instloop is None:
@@ -297,7 +358,6 @@ class ApplianceImageCreator(ImageCreator):
 
     def _resparse(self, size = None):
         return self.__instloop.resparse(size)
-    
     
     
     def package(self, destdir,package,include):

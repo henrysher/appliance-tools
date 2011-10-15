@@ -30,7 +30,7 @@ from imgcreate.fs import *
 
 
 class PartitionedMount(Mount):
-    def __init__(self, disks, mountdir):
+    def __init__(self, disks, mountdir, partition_layout):
         Mount.__init__(self, mountdir)
         self.disks = {}
         for name in disks.keys():
@@ -45,6 +45,7 @@ class PartitionedMount(Mount):
         self.mapped = False
         self.mountOrder = []
         self.unmountOrder = []
+        self.partition_layout = partition_layout
 
     def add_partition(self, size, disk, mountpoint, fstype = None):
         self.partitions.append({'size': size,
@@ -59,8 +60,8 @@ class PartitionedMount(Mount):
         logging.debug("Formatting disks")
         for dev in self.disks.keys():
             d = self.disks[dev]
-            logging.debug("Initializing partition table for %s" % (d['disk'].device))
-            rc = subprocess.call(["/sbin/parted", "-s", d['disk'].device, "mklabel", "msdos"])
+            logging.debug("Initializing partition table for %s with %s layout" % (d['disk'].device, self.partition_layout))
+            rc = subprocess.call(["/sbin/parted", "-s", d['disk'].device, "mklabel", "%s" % self.partition_layout])
             if rc != 0:
                 raise MountError("Error writing partition table on %s" % d['disk'].device)
 
@@ -73,7 +74,7 @@ class PartitionedMount(Mount):
 
             d = self.disks[p['disk']]
             d['numpart'] += 1
-            if d['numpart'] > 3:
+            if d['numpart'] > 3 and self.partition_layout == 'msdos':
                 # Increase allocation of extended partition to hold this partition
                 d['extended'] += p['size']
                 p['type'] = 'logical'
@@ -92,11 +93,11 @@ class PartitionedMount(Mount):
         logging.debug("Creating partitions")
         for p in self.partitions:
             d = self.disks[p['disk']]
-            if p['num'] == 5:
+            if p['num'] == 5 and self.partition_layout == 'msdos':
                 logging.debug("Added extended part at %d of size %d" % (p['start'], d['extended']))
                 rc = subprocess.call(["/sbin/parted", "-s", d['disk'].device, "mkpart", "extended",
                                       "%dM" % p['start'], "%dM" % (p['start'] + d['extended'])])
-            
+
             logging.debug("Add %s part at %d of size %d" % (p['type'], p['start'], p['size']))
             rc = subprocess.call(["/sbin/parted", "-s", d['disk'].device, "mkpart",
                                   p['type'], "%dM" % p['start'], "%dM" % (p['start']+p['size'])])
@@ -148,7 +149,7 @@ class PartitionedMount(Mount):
                 os.symlink(mapperdev, loopdev)
 
             logging.debug("Adding partx mapping for %s" % d['disk'].device)
-            rc = subprocess.call(["/sbin/kpartx", "-a", d['disk'].device])
+            rc = subprocess.call(["/sbin/kpartx", "-a", "-s", d['disk'].device])
             if rc != 0:
                 raise MountError("Failed to map partitions for '%s'" %
                                  d['disk'].device)
@@ -229,6 +230,10 @@ class PartitionedMount(Mount):
                     p = p1
                     break
 
+            if mp == 'biosboot':
+                subprocess.call(["/sbin/parted", "-s", self.disks[p['disk']]['disk'].device, "set", "1", "bios_grub", "on"])
+                continue
+
             if mp == 'swap':
                 subprocess.call(["/sbin/mkswap", p['device']])                                  
                 continue
@@ -248,3 +253,4 @@ class PartitionedMount(Mount):
     def resparse(self, size = None):
         # Can't re-sparse a disk image - too hard
         pass
+
