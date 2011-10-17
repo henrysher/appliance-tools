@@ -25,6 +25,7 @@ import zipfile
 import tarfile
 import subprocess
 import logging
+import re
 
 from imgcreate.errors import *
 from imgcreate.fs import *
@@ -179,7 +180,7 @@ class ApplianceImageCreator(ImageCreator):
         
         self._create_mkinitrd_config()
 
-    def _create_grub_devices(self):
+    def _create_grub_devices(self, grubversion = 1):
         devs = []
         parts = kickstart.get_partitions(self.ks)
         for p in parts:
@@ -195,8 +196,13 @@ class ApplianceImageCreator(ImageCreator):
             devmap += "(hd%-d) /dev/%s\n" % (n, dev)
             n += 1
 
-        logging.debug("Writing grub %s/boot/grub/device.map" % self._instroot)
-        cfg = open(self._instroot + "/boot/grub/device.map", "w")
+        if grubversion == 2:
+            grubdir = "/boot/grub2"
+        else:
+            grubdir = "/boot/grub"
+
+        logging.debug("Writing grub %s%s/device.map" % (self._instroot, grubdir))
+        cfg = open(self._instroot + "%s/device.map" % grubdir, "w")
         cfg.write(devmap)
         cfg.close()
 
@@ -308,16 +314,12 @@ class ApplianceImageCreator(ImageCreator):
             raise MountError("Unable to install grub bootloader")
 
     def _install_grub2(self):
+        (bootdevnum, rootdevnum, rootdev, prefix) = self._get_grub_boot_config()
+
         i = 0
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
             i =i+1
-
-        devmap = "(hd0) %s\n" % loopdev
-
-        cfg = open(self._instroot + "/boot/grub2/device.map", "w")
-        cfg.write(devmap)
-        cfg.close()
 
         logging.debug("Installing grub2 to %s" % loopdev)
 
@@ -333,13 +335,37 @@ class ApplianceImageCreator(ImageCreator):
         if rc != 0:
             raise MountError("Unable to install grub2 bootloader")
 
-        # TODO: Generate /boot/grub2/grub.cfg file here!!!
+        rootpartition = self.__instloop.partitions[rootdevnum]
+        bootpartition = self.__instloop.partitions[bootdevnum]
+
+        os.environ['GRUB_BOOT_PREFIX'] = self._instroot
+
+        if os.path.exists('/sbin/grub2-mkconfig'):
+            mkconfigcommand = "/sbin/grub2-mkconfig"
+        else:
+            mkconfigcommand = self._instroot + "/sbin/grub2-mkconfig"
+
+        # Generating grub2 config file
+        subprocess.call([mkconfigcommand, "-d", rootpartition['devicemapper'], "-b", bootpartition['devicemapper'], "-o", self._instroot + "/boot/grub2/grub.cfg"])
+
+        # Grub2 config file needs some cleanup because it has root device specified as a loop disk...
+        grub2_cfg = open(self._instroot + "/boot/grub2/grub.cfg","r+")
+        data = grub2_cfg.read()
+        # Changing values for both - root and boot partitions
+        data = re.sub(rootpartition['devicemapper'], "/dev/%s%s" % (rootpartition['disk'], rootdevnum + 1), data)
+        data = re.sub(bootpartition['devicemapper'], "/dev/%s%s" % (bootpartition['disk'], bootdevnum + 1), data)
+        data = re.sub(loopdev, "/dev/%s" % rootpartition['disk'], data)
+        grub2_cfg.seek(0)
+        grub2_cfg.truncate()
+        grub2_cfg.write(data)
+        grub2_cfg.close()
 
     def _create_bootconfig(self):
         if self.grub == 'grub2':
             # We have GRUB2 package installed
             # Most probably this is Fedora 16+
             logging.debug("Found GRUB2 package.")
+            self._create_grub_devices(2)
             self._install_grub2()
         elif self.grub == 'grub':
             # We have GRUB Legacy installed
