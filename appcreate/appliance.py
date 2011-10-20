@@ -335,6 +335,8 @@ class ApplianceImageCreator(ImageCreator):
         if rc != 0:
             raise MountError("Unable to install grub2 bootloader")
 
+        logging.debug("Grub2 installed.")
+
         rootpartition = self.__instloop.partitions[rootdevnum]
         bootpartition = self.__instloop.partitions[bootdevnum]
 
@@ -344,6 +346,8 @@ class ApplianceImageCreator(ImageCreator):
             mkconfigcommand = "/sbin/grub2-mkconfig"
         else:
             mkconfigcommand = self._instroot + "/sbin/grub2-mkconfig"
+
+        logging.debug("Generating grub2 configuration file...")
 
         # Generating grub2 config file
         subprocess.call([mkconfigcommand, "-d", rootpartition['devicemapper'], "-b", bootpartition['devicemapper'], "-o", self._instroot + "/boot/grub2/grub.cfg"])
@@ -359,6 +363,8 @@ class ApplianceImageCreator(ImageCreator):
         grub2_cfg.truncate()
         grub2_cfg.write(data)
         grub2_cfg.close()
+
+        logging.debug("Grub2 configuration file generated.")
 
     def _create_bootconfig(self):
         if self.grub == 'grub2':
