@@ -299,19 +299,16 @@ class ApplianceImageCreator(ImageCreator):
 
         logging.debug("Installing grub to %s" % loopdev)
 
-        if os.path.exists('/sbin/grub'):
-            logging.debug("Using host provided GRUB.")
-            grubcommand = "/sbin/grub"
-        else:
-            logging.warning("GRUB executable wasn't found on host; trying to use GRUB from image.")
-            grubcommand = self._instroot + "/sbin/grub"
-
-        grub = subprocess.Popen([grubcommand, "--batch", "--no-floppy"],
+        grub = subprocess.Popen([self._instroot + "/sbin/grub", "--batch", "--no-floppy"],
                                 stdin=subprocess.PIPE)
+
         grub.communicate(setup)
         rc = grub.wait()
+
         if rc != 0:
             raise MountError("Unable to install grub bootloader")
+
+        logging.debug("Grub installed.")
 
     def _install_grub2(self):
         (bootdevnum, rootdevnum, rootdev, prefix) = self._get_grub_boot_config()
@@ -323,34 +320,26 @@ class ApplianceImageCreator(ImageCreator):
 
         logging.debug("Installing grub2 to %s" % loopdev)
 
-        if os.path.exists('/sbin/grub2-install'):
-            logging.debug("Using host provided grub2-install.")
-            grubcommand = "/sbin/grub2-install"
-        else:
-            logging.warning("grub2-install executable wasn't found on host; trying to use it from image.")
-            grubcommand = self._instroot + "/sbin/grub2-install"
+        # mount full /dev filesystem
+        subprocess.call(["mount", "--bind", "/dev", self._instroot + "/dev"])
 
-        rc = subprocess.call([grubcommand, "--no-floppy", "--root-directory=" + self._instroot, "--grub-mkdevicemap=" + self._instroot + "/boot/grub2/device.map", loopdev])
+        rc = subprocess.call(["chroot", self._instroot, "grub2-install", "--no-floppy", "--grub-mkdevicemap=/boot/grub2/device.map", loopdev])
 
         if rc != 0:
+            subprocess.call(["umount", self._instroot + "/dev"])
             raise MountError("Unable to install grub2 bootloader")
 
         logging.debug("Grub2 installed.")
-
-        rootpartition = self.__instloop.partitions[rootdevnum]
-        bootpartition = self.__instloop.partitions[bootdevnum]
-
-        os.environ['GRUB_BOOT_PREFIX'] = self._instroot
-
-        if os.path.exists('/sbin/grub2-mkconfig'):
-            mkconfigcommand = "/sbin/grub2-mkconfig"
-        else:
-            mkconfigcommand = self._instroot + "/sbin/grub2-mkconfig"
-
         logging.debug("Generating grub2 configuration file...")
 
         # Generating grub2 config file
-        subprocess.call([mkconfigcommand, "-d", rootpartition['devicemapper'], "-b", bootpartition['devicemapper'], "-o", self._instroot + "/boot/grub2/grub.cfg"])
+        subprocess.call(["chroot", self._instroot, "grub2-mkconfig", "-o", "/boot/grub2/grub.cfg"])
+
+        # umount /dev filesystem
+        subprocess.call(["umount", self._instroot + "/dev"])
+
+        rootpartition = self.__instloop.partitions[rootdevnum]
+        bootpartition = self.__instloop.partitions[bootdevnum]
 
         # Grub2 config file needs some cleanup because it has root device specified as a loop disk...
         grub2_cfg = open(self._instroot + "/boot/grub2/grub.cfg","r+")
@@ -359,6 +348,7 @@ class ApplianceImageCreator(ImageCreator):
         data = re.sub(rootpartition['devicemapper'], "/dev/%s%s" % (rootpartition['disk'], rootdevnum + 1), data)
         data = re.sub(bootpartition['devicemapper'], "/dev/%s%s" % (bootpartition['disk'], bootdevnum + 1), data)
         data = re.sub(loopdev, "/dev/%s" % rootpartition['disk'], data)
+
         grub2_cfg.seek(0)
         grub2_cfg.truncate()
         grub2_cfg.write(data)
@@ -382,7 +372,7 @@ class ApplianceImageCreator(ImageCreator):
             self._install_grub()
         else:
             # No GRUB package is available
-            logging.warning("No GRUB package found. Image will be not bootable until you do some post processing.")
+            logging.warning("WARNING! No GRUB package found. Image will not be bootable until you do some post processing.")
 
     def _unmount_instroot(self):
         if not self.__instloop is None:
