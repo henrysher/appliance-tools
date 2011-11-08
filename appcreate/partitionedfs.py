@@ -99,7 +99,7 @@ class PartitionedMount(Mount):
                                       "%dM" % p['start'], "%dM" % (p['start'] + d['extended'])])
 
             logging.debug("Add %s part at %d of size %d" % (p['type'], p['start'], p['size']))
-            rc = subprocess.call(["/sbin/parted", "-s", d['disk'].device, "mkpart",
+            rc = subprocess.call(["/sbin/parted", "-a", "cyl", "-s", d['disk'].device, "mkpart",
                                   p['type'], "%dM" % p['start'], "%dM" % (p['start']+p['size'])])
 
             # XXX disabled return code check because parted always fails to
