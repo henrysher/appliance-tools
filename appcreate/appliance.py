@@ -264,7 +264,9 @@ class ApplianceImageCreator(ImageCreator):
 
     def _copy_grub_files(self):
         imgpath = None
-        for machine in ["x86_64-redhat", "i386-redhat"]:
+        # http://bugs.centos.org/view.php?id=4995
+        # https://issues.jboss.org/browse/BGBUILD-267
+        for machine in ["x86_64-redhat", "i386-redhat", "x86_64-unknown", "i386-unknown"]:
             imgpath = self._instroot + "/usr/share/grub/" + machine
             if os.path.exists(imgpath):
                 break
