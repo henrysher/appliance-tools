@@ -258,6 +258,8 @@ class ApplianceImageCreator(ImageCreator):
             grub += "        initrd %s/%s-%s.img\n" % (prefix, initrd, v)
 
         logging.debug("Writing grub config %s/boot/grub/grub.conf" % self._instroot)
+        if not os.path.isdir(self._instroot + "/boot/grub/"):
+            os.mkdir(self._instroot + "/boot/grub/")
         cfg = open(self._instroot + "/boot/grub/grub.conf", "w")
         cfg.write(grub)
         cfg.close()
@@ -363,6 +365,9 @@ class ApplianceImageCreator(ImageCreator):
         logging.debug("Grub2 configuration file generated.")
 
     def _create_bootconfig(self):
+        # For EC2 lets always make a grub Legacy config file
+        logging.debug("Writing GRUB Legacy config.")
+        self._create_grub_config()
         if self.grub == 'grub2':
             # We have GRUB2 package installed
             # Most probably this is Fedora 16+
@@ -373,7 +378,6 @@ class ApplianceImageCreator(ImageCreator):
             # We have GRUB Legacy installed
             logging.debug("Found GRUB Legacy package.")
             self._create_grub_devices()
-            self._create_grub_config()
             self._copy_grub_files()
             self._install_grub()
         else:
