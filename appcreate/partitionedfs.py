@@ -46,6 +46,7 @@ class PartitionedMount(Mount):
         self.mountOrder = []
         self.unmountOrder = []
         self.partition_layout = partition_layout
+        self.has_extended = False # Has extended partition layout
 
     def add_partition(self, size, disk, mountpoint, fstype = None):
         self.partitions.append({'size': size,
@@ -94,6 +95,7 @@ class PartitionedMount(Mount):
         for p in self.partitions:
             d = self.disks[p['disk']]
             if p['num'] == 5 and self.partition_layout == 'msdos':
+                self.has_extended = True
                 logging.debug("Added extended part at %d of size %d" % (p['start'], d['extended']))
                 rc = subprocess.call(["/sbin/parted", "-s", d['disk'].device, "mkpart", "extended",
                                       "%dM" % p['start'], "%dM" % (p['start'] + d['extended'])])
@@ -124,6 +126,10 @@ class PartitionedMount(Mount):
             if kpartx.returncode:
                 raise MountError("Failed to query partition mapping for '%s'" %
                                  d.device)
+
+            # Pop the fourth (extended) partition
+            if self.has_extended:
+                kpartxOutput.pop(3)
 
             # Quick sanity check that the number of partitions matches
             # our expectation. If it doesn't, someone broke the code
