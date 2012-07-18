@@ -152,11 +152,21 @@ class PartitionedMount(Mount):
                 self.partitions[pnum]['device'] = loopdev
                 self.partitions[pnum]['devicemapper'] = mapperdev
 
-                # grub's install wants partitions to be named
-                # to match their parent device + partition num
-                # kpartx doesn't work like this, so we add compat
-                # symlinks to point to /dev/mapper
-                os.symlink(mapperdev, loopdev)
+                # Loop devices are sometimes still left hanging around from untidily
+                # terminated processes.
+                logging.debug('Creating symlink from %s to %s', loopdev, mapperdev)
+                try:
+                    # grub's install wants partitions to be named
+                    # to match their parent device + partition num
+                    # kpartx doesn't work like this, so we add compat
+                    # symlinks to point to /dev/mapper
+                    os.symlink(mapperdev, loopdev)
+                except OSError as e:
+                    if e.errno == errno.EEXIST:
+                        os.unlink(loopdev)
+                        os.symlink(mapperdev, loopdev)
+                    else:
+                        raise
 
             logging.debug("Adding partx mapping for %s" % d['disk'].device)
             rc = subprocess.call(["/sbin/kpartx", "-a", "-s", d['disk'].device])
