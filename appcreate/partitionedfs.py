@@ -24,6 +24,7 @@ import glob
 import shutil
 import subprocess
 import logging
+import re
 
 from imgcreate.errors import *
 from imgcreate.fs import *
@@ -141,8 +142,10 @@ class PartitionedMount(Mount):
             for i in range(len(kpartxOutput)):
                 line = kpartxOutput[i]
                 newdev = line.split()[0]
+                newdev_id = re.search('^loop\d+?p(\d+)$', newdev).group(1)
+
                 mapperdev = "/dev/mapper/" + newdev
-                loopdev = d['disk'].device + newdev[-1]
+                loopdev = d['disk'].device + newdev_id
 
                 logging.debug("Dev %s: %s -> %s" % (newdev, loopdev, mapperdev))
                 pnum = d['partitions'][i]
