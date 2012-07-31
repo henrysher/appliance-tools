@@ -287,7 +287,7 @@ class ApplianceImageCreator(ImageCreator):
         # Ensure all data is flushed to disk before doing grub install
         subprocess.call(["sync"])
 
-        stage2 = self._instroot + "/boot/grub/stage2"
+        stage2 = "/boot/grub/stage2"
         setup = ""
        
         i = 0
@@ -301,11 +301,15 @@ class ApplianceImageCreator(ImageCreator):
 
         logging.debug("Installing grub to %s" % loopdev)
 
-        grub = subprocess.Popen([self._instroot + "/sbin/grub", "--batch", "--no-floppy"],
+        subprocess.call(["mount", "--bind", "/dev", self._instroot + "/dev"])
+
+        grub = subprocess.Popen(["chroot", self._instroot, "/sbin/grub", "--batch", "--no-floppy"],
                                 stdin=subprocess.PIPE)
 
         grub.communicate(setup)
         rc = grub.wait()
+
+        subprocess.call(["umount", self._instroot + "/dev"])
 
         if rc != 0:
             raise MountError("Unable to install grub bootloader")
