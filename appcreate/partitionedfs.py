@@ -255,7 +255,7 @@ class PartitionedMount(Mount):
                 continue
 
             if mp == 'swap':
-                subprocess.call(["/sbin/mkswap", p['device']])                                  
+                subprocess.call(["/sbin/mkswap", "-L", "_swap", p['device']])
                 continue
 
             rmmountdir = False

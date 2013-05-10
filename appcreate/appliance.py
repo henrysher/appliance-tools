@@ -79,8 +79,8 @@ class ApplianceImageCreator(ImageCreator):
                     p = p1
                     break
 
-            s +=  "%(device)s  %(mountpoint)s %(fstype)s    defaults,noatime 0 0\n" %  {
-                'device': "/dev/%s%-d" % (p['disk'], p['num']),
+            s +=  "LABEL=_%(label)s  %(mountpoint)s %(fstype)s    defaults,noatime 0 0\n" %  {
+                'label': p['mountpoint'],
                 'mountpoint': p['mountpoint'],
                 'fstype': p['fstype'] }
 
@@ -218,7 +218,7 @@ class ApplianceImageCreator(ImageCreator):
 
             if p['mountpoint'] == "/":
                 rootdevnum = p['num'] - 1
-                rootdev = "/dev/%s%-d" % (p['disk'], p['num'])
+                rootdev = "LABEL=_/"
 
         prefix = ""
         if bootdevnum == rootdevnum:
@@ -353,9 +353,9 @@ class ApplianceImageCreator(ImageCreator):
         grub2_cfg = open(self._instroot + "/boot/grub2/grub.cfg","r+")
         data = grub2_cfg.read()
         # Changing values for both - root and boot partitions
-        data = re.sub(rootpartition['devicemapper'], "/dev/%s%s" % (rootpartition['disk'], rootdevnum + 1), data)
-        data = re.sub(bootpartition['devicemapper'], "/dev/%s%s" % (bootpartition['disk'], bootdevnum + 1), data)
-        data = re.sub(loopdev, "/dev/%s" % rootpartition['disk'], data)
+        data = re.sub(rootpartition['devicemapper'], "LABEL=_%s" % rootpartition['mountpoint'], data)
+        data = re.sub(bootpartition['devicemapper'], "LABEL=_%s" % bootpartition['mountpoint'], data)
+        data = re.sub(loopdev, "LABEL=_%s" % rootpartition['mountpoint'], data)
 
         grub2_cfg.seek(0)
         grub2_cfg.truncate()
