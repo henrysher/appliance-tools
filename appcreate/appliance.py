@@ -79,8 +79,12 @@ class ApplianceImageCreator(ImageCreator):
                     p = p1
                     break
 
-            s +=  "LABEL=_%(label)s  %(mountpoint)s %(fstype)s    defaults,noatime 0 0\n" %  {
-                'label': p['mountpoint'],
+            if not p['UUID'] is None:
+                mountdev = p['UUID']
+            else:
+                mountdev = "LABEL=_%s" % p['mountpoint']
+            s +=  "%(mountdev)s  %(mountpoint)s %(fstype)s    defaults,noatime 0 0\n" %  {
+                'mountdev': mountdev,
                 'mountpoint': p['mountpoint'],
                 'fstype': p['fstype'] }
 
@@ -224,7 +228,10 @@ class ApplianceImageCreator(ImageCreator):
 
             if p['mountpoint'] == "/":
                 rootdevnum = p['num'] - 1
-                rootdev = "LABEL=_/"
+                if not p['UUID'] is None:
+                    rootdev = p['UUID']
+                else:
+                    rootdev = "LABEL=_/"
 
         prefix = ""
         if bootdevnum == rootdevnum:
@@ -282,8 +289,10 @@ class ApplianceImageCreator(ImageCreator):
 
             if p['mountpoint'] == "/":
                 rootdevnum = p['num'] - 1
-                rootdev = "LABEL=_%s" % p['mountpoint']
-
+                if not p['UUID'] is None:
+                    rootdev = p['UUID']
+                else:
+                    rootdev = "LABEL=_/"
         prefix = ""
         if bootdevnum == rootdevnum:
             prefix = "/boot"
@@ -412,9 +421,16 @@ class ApplianceImageCreator(ImageCreator):
         grub2_cfg = open(self._instroot + "/boot/grub2/grub.cfg","r+")
         data = grub2_cfg.read()
         # Changing values for both - root and boot partitions
-        data = re.sub(rootpartition['devicemapper'], "LABEL=_%s" % rootpartition['mountpoint'], data)
-        data = re.sub(bootpartition['devicemapper'], "LABEL=_%s" % bootpartition['mountpoint'], data)
-        data = re.sub(loopdev, "LABEL=_%s" % rootpartition['mountpoint'], data)
+        if not bootpartition['UUID'] is None:
+            data = re.sub(bootpartition['devicemapper'], bootpartition['UUID'], data)
+        else:
+            data = re.sub(bootpartition['devicemapper'], "LABEL=_%s" % bootpartition['mountpoint'], data)
+        if not rootpartition['UUID'] is None:
+            data = re.sub(rootpartition['devicemapper'], rootpartition['UUID'], data)
+            data = re.sub(loopdev, rootpartition['UUID'], data)
+        else:
+            data = re.sub(rootpartition['devicemapper'], "LABEL=_%s" % rootpartition['mountpoint'], data)
+            data = re.sub(loopdev, "LABEL=_%s" % rootpartition['mountpoint'], data)
 
         grub2_cfg.seek(0)
         grub2_cfg.truncate()

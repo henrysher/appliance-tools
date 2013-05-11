@@ -56,6 +56,7 @@ class PartitionedMount(Mount):
                                 'disk': disk,  # physical disk name holding partition
                                 'device': None, # kpartx device node for partition
                                 'mount': None, # Mount object
+                                'UUID': None, # UUID for partition
                                 'num': None}) # Partition number
 
     def __format_disks(self):
@@ -250,12 +251,19 @@ class PartitionedMount(Mount):
                     p = p1
                     break
 
+            if mp == '/boot/uboot':
+                subprocess.call(["/sbin/mkfs.vfat", "-F", "32", "-n", "_/boot/uboot", p['device']])
+                subprocess.call(["/bin/mkdir", "-p", self.mountdir + p['mountpoint'])
+                p['UUID'] = self.__getuuid(p['device'])
+                continue
+
             if mp == 'biosboot':
                 subprocess.call(["/sbin/parted", "-s", self.disks[p['disk']]['disk'].device, "set", "1", "bios_grub", "on"])
                 continue
 
             if mp == 'swap':
                 subprocess.call(["/sbin/mkswap", "-L", "_swap", p['device']])
+                p['UUID'] = self.__getuuid(p['device'])
                 continue
 
             rmmountdir = False
@@ -269,8 +277,18 @@ class PartitionedMount(Mount):
                                  rmmountdir)
             pdisk.mount()
             p['mount'] = pdisk
+            p['UUID'] = self.__getuuid(p['device'])
 
     def resparse(self, size = None):
         # Can't re-sparse a disk image - too hard
         pass
+
+    def __getuuid(self, partition):
+        devdata = subprocess.Popen(["/sbin/blkid", partition], stdout=subprocess.PIPE)
+        devdataout = devdata.communicate()[0].split()
+        for data in devdataout:
+            if data.startswith("UUID"):
+                UUID = data.replace('"', '')
+                continue
+        return UUID
 
