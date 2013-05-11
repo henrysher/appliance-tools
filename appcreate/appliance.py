@@ -132,7 +132,8 @@ class ApplianceImageCreator(ImageCreator):
             if parts[i].disk:
                 disk = parts[i].disk
             else:
-                raise CreatorError("Failed to create disks, no --ondisk specified in partition line of ks file")
+                logging.debug("No --ondisk specified in partition line of ks file; assuming 'sda'")
+                disk = "sda"
                     
             size =   parts[i].size * 1024L * 1024L
             
@@ -181,7 +182,10 @@ class ApplianceImageCreator(ImageCreator):
                                            partition_layout)
 
         for p in parts:
-            self.__instloop.add_partition(int(p.size), p.disk, p.mountpoint, p.fstype)
+            if p.disk:
+                self.__instloop.add_partition(int(p.size), p.disk, p.mountpoint, p.fstype)
+            else:
+                self.__instloop.add_partition(int(p.size), "sda", p.mountpoint, p.fstype)
 
         try:
             self.__instloop.mount()
@@ -197,6 +201,9 @@ class ApplianceImageCreator(ImageCreator):
             dev = p.disk
             if not dev in devs:
                 devs.append(dev)
+
+        if devs == []:
+            devs.append("sda")
 
         devs.sort()
 
