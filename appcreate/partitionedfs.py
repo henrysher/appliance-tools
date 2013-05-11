@@ -253,7 +253,7 @@ class PartitionedMount(Mount):
 
             if mp == '/boot/uboot':
                 subprocess.call(["/sbin/mkfs.vfat", "-F", "32", "-n", "_/boot/uboot", p['device']])
-                subprocess.call(["/bin/mkdir", "-p", self.mountdir + p['mountpoint'])
+                subprocess.call(["/bin/mkdir", "-p", "%s%s" % (self.mountdir, p['mountpoint']))
                 p['UUID'] = self.__getuuid(p['device'])
                 continue
 
