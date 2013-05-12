@@ -307,9 +307,9 @@ class ApplianceImageCreator(ImageCreator):
         extlinux += "ui menu.c32\n"
         extlinux += "menu autoboot Welcome to %s. Automatic boot in # second{,s}. Press a key for options.\n" % (self.name)
         extlinux += "menu title %s Boot Options.\n" % (self.name)
-        extlinux += "menu hiddenmenu\n"
+        extlinux += "menu hidden\n"
         extlinux += "timeout 1\n"
-        extlinux += "totaltimeout 60\n\n"
+        extlinux += "totaltimeout 600"
 
         versions = []
         kernels = self._get_kernel_versions()
