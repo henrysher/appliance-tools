@@ -254,6 +254,10 @@ class PartitionedMount(Mount):
             if mp == '/boot/uboot':
                 subprocess.call(["/sbin/mkfs.vfat", "-F", "32", "-n", "_/boot/uboot", p['device']])
                 subprocess.call(["/bin/mkdir", "-p", "%s%s" % (self.mountdir, p['mountpoint'])])
+                # mark the partition bootable
+                subprocess.call(["/sbin/parted", "-s", self.disks[p['disk']]['disk'].device, "set", str(p['num']), "boot", "on"])
+                # make sure that the partition type is correct
+                subprocess.call(["/sbin/sfdisk", "--change-id", self.disks[p['disk']]['disk'].device, str(p['num']), "c",])
                 p['UUID'] = self.__getuuid(p['device'])
                 continue
 
