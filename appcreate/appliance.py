@@ -494,6 +494,8 @@ class ApplianceImageCreator(ImageCreator):
 
 
     def _create_bootconfig(self):
+        logging.debug("Writing kickstart file.")
+        self._write_kickstart()
         # For EC2 lets always make a grub Legacy config file
         logging.debug("Writing GRUB Legacy config.")
         self._create_grub_config()
@@ -638,6 +640,12 @@ class ApplianceImageCreator(ImageCreator):
                 logging.debug("convert successful")
             if rc != 0:
                 raise CreatorError("Unable to convert disk to %s" % self.__disk_format)
+
+    def _write_kickstart(self):
+        #write out the kicks tart to /root/anaconda-ks.cfg
+        ks = open(self._instroot + "/root/anaconda-ks.cfg", "w")
+        ks.write(self.ks)
+        ks.close()
 
 
 
