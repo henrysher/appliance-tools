@@ -309,7 +309,7 @@ class ApplianceImageCreator(ImageCreator):
         extlinux += "menu title %s Boot Options.\n" % (self.name)
         extlinux += "menu hidden\n"
         extlinux += "timeout 1\n"
-        extlinux += "totaltimeout 600"
+        extlinux += "totaltimeout 600\n\n"
 
         versions = []
         kernels = self._get_kernel_versions()
