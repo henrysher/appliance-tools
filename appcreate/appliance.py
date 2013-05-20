@@ -633,7 +633,12 @@ class ApplianceImageCreator(ImageCreator):
         for name in self.__disks.keys():
             dst = "%s/%s-%s.%s" % (self._outdir, self.name,name, self.__disk_format)       
             logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
-            rc = subprocess.call(["qemu-img", "convert",
+            if self.__disk_format == "qcow2":
+                logging.debug("using compressed qcow2")
+                compressflag="-c"
+            else:
+                compressflag=""
+            rc = subprocess.call(["qemu-img", "convert", compressflag,
                                    "-f", "raw", self.__disks[name].lofile,
                                    "-O", self.__disk_format,  dst])
             if rc == 0:
