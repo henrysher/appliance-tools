@@ -644,7 +644,7 @@ class ApplianceImageCreator(ImageCreator):
     def _write_kickstart(self):
         #write out the kicks tart to /root/anaconda-ks.cfg
         ks = open(self._instroot + "/root/anaconda-ks.cfg", "w")
-        ks.write(self.ks)
+        ks.write("%s" %(self.ks.handler,))
         ks.close()
 
 
