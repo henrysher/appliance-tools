@@ -92,7 +92,7 @@ class PartitionedMount(Mount):
             logging.debug("Assigned %s to %s%d at %d at size %d" % (p['mountpoint'], p['disk'], p['num'], p['start'], p['size']))
 
         # XXX we should probably work in cylinder units to keep fdisk happier..
-        start = 0
+        start = 1
         logging.debug("Creating partitions")
         for p in self.partitions:
             d = self.disks[p['disk']]
@@ -254,11 +254,11 @@ class PartitionedMount(Mount):
             if mp == '/boot/uboot':
                 subprocess.call(["/sbin/mkfs.vfat", "-F", "32", "-n", "_/boot/uboot", p['device']])
                 subprocess.call(["/bin/mkdir", "-p", "%s%s" % (self.mountdir, p['mountpoint'])])
+                p['UUID'] = self.__getuuid(p['device'])
                 # mark the partition bootable
                 subprocess.call(["/sbin/parted", "-s", self.disks[p['disk']]['disk'].device, "set", str(p['num']), "boot", "on"])
                 # make sure that the partition type is correct
                 subprocess.call(["/sbin/sfdisk", "--change-id", self.disks[p['disk']]['disk'].device, str(p['num']), "c",])
-                p['UUID'] = self.__getuuid(p['device'])
                 continue
 
             if mp == 'biosboot':
