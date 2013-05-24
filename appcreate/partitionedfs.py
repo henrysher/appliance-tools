@@ -85,7 +85,8 @@ class PartitionedMount(Mount):
             else:
                 p['type'] = 'primary'
                 p['num'] = d['numpart']
-
+            if d['offset'] == 0:
+                d['offset'] = 1
             p['start'] = d['offset']
             d['offset'] += p['size']
             d['partitions'].append(n)
