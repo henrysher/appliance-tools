@@ -331,8 +331,10 @@ class ApplianceImageCreator(ImageCreator):
 
         for v in versions:
             extlinux += "label %s (%s)\n" % (self.name, v)
-            extlinux += "        kernel %s/vmlinuz-%s ro\n" % (prefix, v)
-            extlinux += "        append ro root=%s %s initrd=%s/%s-%s.img\n\n" % (rootdev, options, prefix, initrd, v)
+            extlinux += "\tkernel %s/vmlinuz-%s\n" % (prefix, v)
+            extlinux += "\tappend ro root=%s %s\n" % (rootdev, options)
+            extlinux += "\tinitrd %s/%s-%s.img\n\n" % (prefix, initrd, v)
+
 
         logging.debug("Writing extlinux config %s/boot/extlinux/extlinux.conf" % self._instroot)
         cfg = open(self._instroot + "/boot/extlinux/extlinux.conf", "w")
