@@ -93,7 +93,7 @@ class PartitionedMount(Mount):
             logging.debug("Assigned %s to %s%d at %d at size %d" % (p['mountpoint'], p['disk'], p['num'], p['start'], p['size']))
 
         # XXX we should probably work in cylinder units to keep fdisk happier..
-        start = 1
+        start = 0
         logging.debug("Creating partitions")
         for p in self.partitions:
             d = self.disks[p['disk']]
