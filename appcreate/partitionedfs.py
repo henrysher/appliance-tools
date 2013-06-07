@@ -104,8 +104,12 @@ class PartitionedMount(Mount):
                                       "%dM" % p['start'], "%dM" % (p['start'] + d['extended'])])
 
             logging.debug("Add %s part at %d of size %d" % (p['type'], p['start'], p['size']))
+            if p['fstype'].startswith('ext'):
+                fstype = 'ext2'
+            if p['fstype'] == 'vfat':
+                fstype = 'fat32'
             rc = subprocess.call(["/sbin/parted", "-a", "cyl", "-s", d['disk'].device, "mkpart",
-                                  p['type'], "%dM" % p['start'], "%dM" % (p['start']+p['size'])])
+                                  p['type'], fstype, "%dM" % p['start'], "%dM" % (p['start']+p['size'])])
 
             # XXX disabled return code check because parted always fails to
             # reload part table with loop devices. Annoying because we can't
@@ -256,8 +260,6 @@ class PartitionedMount(Mount):
                 subprocess.call(["/bin/mkdir", "-p", "%s%s" % (self.mountdir, p['mountpoint'])])
                 # mark the partition bootable
                 subprocess.call(["/sbin/parted", "-s", self.disks[p['disk']]['disk'].device, "set", str(p['num']), "boot", "on"])
-                # make sure that the partition type is correct
-                subprocess.call(["/sbin/sfdisk", "--change-id", self.disks[p['disk']]['disk'].device, str(p['num']), "c",])
                 subprocess.call(["/sbin/mkfs.vfat", "-n", "uboot", p['device']])
                 p['UUID'] = self.__getuuid(p['device'])
                 continue
