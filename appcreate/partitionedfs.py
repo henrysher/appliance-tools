@@ -258,7 +258,7 @@ class PartitionedMount(Mount):
                 subprocess.call(["/sbin/parted", "-s", self.disks[p['disk']]['disk'].device, "set", str(p['num']), "boot", "on"])
                 # make sure that the partition type is correct
                 subprocess.call(["/sbin/sfdisk", "--change-id", self.disks[p['disk']]['disk'].device, str(p['num']), "c",])
-                subprocess.call(["/sbin/mkfs.vfat", "-F", "32", "-n", "_/boot/uboot", p['device']])
+                subprocess.call(["/sbin/mkfs.vfat", "-n", "uboot", p['device']])
                 p['UUID'] = self.__getuuid(p['device'])
                 continue
 
