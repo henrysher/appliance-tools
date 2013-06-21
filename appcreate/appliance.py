@@ -620,9 +620,15 @@ class ApplianceImageCreator(ImageCreator):
         #else move to _outdir    
         else:
             logging.debug("moving disks to stage location")
-            for name in self.__disks.keys():  
-                src = "%s/%s-%s.%s" % (self.__imgdir, self.name,name, self.__disk_format)
-                dst = "%s/%s-%s.%s" % (self._outdir, self.name,name, self.__disk_format)
+            for name in self.__disks.keys():
+                rc = subprocess.call(["xz", "-z", "%s" %(self.__imgdir, self.name,name, self.__disk_format)])
+                if rc == 0:
+                    logging.debug("compression successful")
+                if rc != 0:
+                    raise CreatorError("Unable to compress disk to %s" % self.__disk_format)
+
+                src = "%s/%s-%s.%s.xz" % (self.__imgdir, self.name,name, self.__disk_format)
+                dst = "%s/%s-%s.%s.xz" % (self._outdir, self.name,name, self.__disk_format)
                 logging.debug("moving %s to %s" % (src,dst))
                 shutil.move(src,dst)
         #write meta data in stage dir
