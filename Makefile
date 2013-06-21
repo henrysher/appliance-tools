@@ -1,4 +1,4 @@
-VERSION = 007.0
+VERSION = 007.1
 
 INSTALL = /usr/bin/install -c
 INSTALL_PROGRAM = ${INSTALL}
