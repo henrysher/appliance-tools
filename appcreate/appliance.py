@@ -621,7 +621,7 @@ class ApplianceImageCreator(ImageCreator):
         else:
             logging.debug("moving disks to stage location")
             for name in self.__disks.keys():
-                rc = subprocess.call(["xz", "-z", "%s" %(self.__imgdir, self.name,name, self.__disk_format)])
+                rc = subprocess.call(["xz", "-z", "%s/%s-%s.%s" %(self.__imgdir, self.name,name, self.__disk_format)])
                 if rc == 0:
                     logging.debug("compression successful")
                 if rc != 0:
