@@ -1,19 +1,11 @@
-                       The Fedora Appliance tools
-                  Daniel P. Berrange <berrange@redhat.com>
-                      David Huff <dhuff@redhat.com>
+                         The Fedora Appliance tools
+                      Dennis Gilmore <dennis@ausil.us>
 
-                    Last updated: July 30 2009 (v0.1)
+                    Last updated: August 26 2013 (v007.3)
 
 
 Tools for generating appliance images on Fedora based systems including
-derived distributions such as RHEL, CentOS and others. See more info on the project at
-
-http://thincrust.net for more details.
-
-for more details. Discussion of  this project takes places at the
-thincrust-devel@redhat.com mailing list
-
-http://www.redhat.com/mailman/listinfo/thincrust-devel
+derived distributions such as RHEL, CentOS and others.
 
 This project and it's source files is licensed under the GPLv2
 license. See the file COPYING for details.
@@ -23,23 +15,25 @@ license. See the file COPYING for details.
 
 This is a first cut the Appliance Creation Tool (ACT) a tool to create
 Appliance Images from a kickstart file. This tool uses the liveCD
-creator API as well as patches to the LIVECD API originally written by Daniel P. Berrange <berrange@redhat.com> to create a multi partitioned disk image. This Disk image can then be booted in a virtual container such as XEN, KVM, and VMWARE.
+creator API as well as patches to the LIVECD API originally written by 
+Daniel P. Berrange <berrange@redhat.com> to create a multi partitioned 
+disk image. This Disk image can then be booted in a virtual container
+such as XEN, KVM, and VMWARE or installed into sdcards or usb sticks for
+use on arm systems such as the panda board, beagleboard, trimslice, etc.
 
 
 2. CREATING AN APPLIANCE IMAGE
 
-To create an appliance image, the appliance-creator tool is used. Super user privileges are needed. The tool is more or less self-documenting, use
-the --help option to see options.
+To create an appliance image, the appliance-creator tool is used. Super 
+user privileges are needed. The tool is more or less self-documenting, 
+use the --help option to see options.
 
-Build the appliance, this used the example kickstart file included in the rpm others are available in the spin KickstartPool
+Build the appliance, this used the example kickstart file included in 
+the rpm others are available in the spin KickstartPool
 # appliance-creator -n ThinCrust --config /usr/share/doc/appliance-tools-%{version}/aos-rawhide.ks
 
 Run using libvirt (requires libvirt virt-manager libvirt-python python-virtinst)
 # virt-image ThinCrust.xml
 
-
-
-
-
-
-
+Installing an arm image requires installing via xzcat
+# xzcat <arm disk image> >/dev/sdcard

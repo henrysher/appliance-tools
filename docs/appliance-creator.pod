@@ -38,7 +38,7 @@ Name of appliance image to be created (default based on config name)
 
 =item -f FORMAT, --format=FORMAT
 
-Disk format, this will take any input that qemu-img convert will take (raw, qcow2, vmdk, ...) Note: not all disk formats with work with all virt technologies.
+Disk format, this will take any input that qemu-img convert will take (raw, qcow2, vmdk, ...) Note: not all disk formats with work with all virt technologies. raw images are xz compressed, qcow2 images use compression.
 
 =item --vmem=VMEM
 
@@ -123,19 +123,18 @@ appliance-creator \
 
 =head1 CONTRIBUTORS
 
-David Huff, Joey Boggs, Bryan kearney, Daniel P. Berrange, and a team of other contributors.
+Dennis Gilmore, David Huff, Joey Boggs, Bryan kearney, Daniel P. Berrange, and a team of other contributors.
 
 =head1 BUGS
 
-Report bugs to the mailing list C<http://www.redhat.com/mailman/listinfo/thincrust-devel-list> or directly to BugZilla C<http://bugzilla.redhat.com/bugzilla/> against the C<Fedora> product, and the C<appliance-tools> component. 
+Report bugs directly to BugZilla C<http://bugzilla.redhat.com/bugzilla/> against the C<Fedora> product, and the C<appliance-tools> component. 
 
 =head1 COPYRIGHT
 
-Copyright (C) Fedora Project 2008, and various contributors. This is free software. You may redistribute copies of it under the terms of the GNU General Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent permitted by law. 
+Copyright (C) Fedora Project 2012, and various contributors. This is free software. You may redistribute copies of it under the terms of the GNU General Public License C<http://www.gnu.org/licenses/gpl.html>. There is NO WARRANTY, to the extent permitted by law. 
 
 =head1 SEE ALSO
 
 C<qemu-img(1)>,C<virt-image(1)>,C<virt-image(5)>
-project website C<http://thincrust.org/>
 
 =cut
