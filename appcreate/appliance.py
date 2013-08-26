@@ -124,6 +124,17 @@ class ApplianceImageCreator(ImageCreator):
         
         #list of partitions from kickstart file
         parts = kickstart.get_partitions(self.ks)
+        # need to eliminate duplicate partitions
+        # this is a bit of a hack but we assume the last partition for a given mount point is the one we want
+        mountpoints = []
+        parts.reverse()
+        for part in parts:
+            mp = part.mountpoint
+            if mp in mountpoints:
+                parts.remove(part)
+            else:
+                mountpoints.append(mp)
+        parts.reverse()
         
         #list of disks where a disk is an dict with name: and size
         disks = []
