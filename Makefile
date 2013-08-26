@@ -21,8 +21,8 @@ install: man
 	$(INSTALL_PROGRAM) -D tools/appliance-creator $(DESTDIR)/usr/bin/appliance-creator
 	$(INSTALL_PROGRAM) -D tools/image-minimizer $(DESTDIR)/usr/bin/image-minimizer
 	$(INSTALL_PROGRAM) -D tools/ec2-converter $(DESTDIR)/usr/bin/ec2-converter
-	$(INSTALL_DATA) -D README $(DESTDIR)/usr/share/doc/appliance-tools-$(VERSION)/README
-	$(INSTALL_DATA) -D COPYING $(DESTDIR)/usr/share/doc/appliance-tools-$(VERSION)/COPYING
+	$(INSTALL_DATA) -D README $(DESTDIR)/usr/share/doc/appliance-tools/README
+	$(INSTALL_DATA) -D COPYING $(DESTDIR)/usr/share/doc/appliance-tools/COPYING
 	mkdir -p $(DESTDIR)/usr/share/appliance-tools/
 	mkdir -p $(DESTDIR)/$(PYTHONDIR)/appcreate
 	mkdir -p $(DESTDIR)/$(PYTHONDIR)/ec2convert
