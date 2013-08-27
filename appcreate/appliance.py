@@ -123,15 +123,15 @@ class ApplianceImageCreator(ImageCreator):
         # need to eliminate duplicate partitions
         # this is a bit of a hack but we assume the last partition for a given mount point is the one we want
         mountpoints = []
-        parts.reverse()
+        toremove = []
         for part in parts:
             mp = part.mountpoint
             if mp in mountpoints:
-                parts.remove(part)
+                toremove.append(part)
             else:
                 mountpoints.append(mp)
-        parts.reverse()
-        
+        for part in toremove:
+                parts.remove(part)
         #list of disks where a disk is an dict with name: and size
         disks = []
 
