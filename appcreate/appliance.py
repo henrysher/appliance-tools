@@ -169,9 +169,9 @@ class ApplianceImageCreator(ImageCreator):
         packages = kickstart.get_packages(self.ks)
         # make this the default
         partition_layout = 'msdos'
-        # if extlinux option is used, go with grub2; otherwise, grub
+        # check for extlinux in kickstart then grub2 and falling back to grub
         if hasattr(self.ks.handler.bootloader, "extlinux"):
-            if 'syslinux-extlinux' in packages:
+            if 'syslinux-extlinux' or 'extlinux-bootloader' in packages:
                 self.bootloader = 'extlinux'
             else:
                 logging.warning("WARNING! syslinux-extlinux package not found.")
