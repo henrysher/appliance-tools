@@ -104,7 +104,7 @@ class ApplianceImageCreator(ImageCreator):
         mkinitrd += "rootopts=\"defaults\"\n"
 
         logging.debug("Writing mkinitrd config %s/etc/sysconfig/mkinitrd" % self._instroot)
-        os.makedirs(self._instroot + "/etc/sysconfig/",mode=644)
+        os.makedirs(self._instroot + "/etc/sysconfig/", mode=644)
         cfg = open(self._instroot + "/etc/sysconfig/mkinitrd", "w")
         cfg.write(mkinitrd)
         cfg.close()
@@ -156,8 +156,8 @@ class ApplianceImageCreator(ImageCreator):
 
         #create disk
         for item in disks:
-            logging.debug("Adding disk %s as %s/%s-%s.raw" % (item['name'], self.__imgdir,self.name, item['name']))
-            disk = SparseLoopbackDisk("%s/%s-%s.raw" % (self.__imgdir,self.name, item['name']),item['size'])
+            logging.debug("Adding disk %s as %s/%s-%s.raw" % (item['name'], self.__imgdir, self.name, item['name']))
+            disk = SparseLoopbackDisk("%s/%s-%s.raw" % (self.__imgdir, self.name, item['name']), item['size'])
             self.__disks[item['name']] = disk
 
 
@@ -376,7 +376,7 @@ class ApplianceImageCreator(ImageCreator):
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
             setup += "device (hd%s) %s\n" % (i,loopdev)
-            i =i+1
+            i = i + 1
         setup += "root (hd0,%d)\n" % bootdevnum
         setup += "setup --stage2=%s --prefix=%s/grub  (hd0)\n" % (stage2, prefix)
         setup += "quit\n"
@@ -404,7 +404,7 @@ class ApplianceImageCreator(ImageCreator):
         i = 0
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
-            i =i+1
+            i = i + 1
 
         logging.debug("Installing grub2 to %s" % loopdev)
 
@@ -469,9 +469,9 @@ class ApplianceImageCreator(ImageCreator):
             raise MountError("Unable to set MBR to %s" % loopdev)
 
         # Set Bootable flag
-        parted="/usr/sbin/parted"
+        parted = "/usr/sbin/parted"
         if not os.path.exists(parted):
-            parted="/sbin/parted"
+            parted = "/sbin/parted"
             if not os.path.exists(parted):
                 raise CreatorError("Missed parted, please install it.")
         dev_null = os.open("/dev/null", os.O_WRONLY)
@@ -532,7 +532,7 @@ class ApplianceImageCreator(ImageCreator):
     def _resparse(self, size = None):
         return self.__instloop.resparse(size)
 
-    def package(self, destdir,package,include):
+    def package(self, destdir, package, include):
         """Prepares the created image for final delivery.
            Stage
            add includes
@@ -542,23 +542,23 @@ class ApplianceImageCreator(ImageCreator):
 
         #add stuff
         if include and os.path.isdir(include):
-            logging.debug("adding everything in %s to %s" % (include,self._outdir))
+            logging.debug("adding everything in %s to %s" % (include, self._outdir))
             files = glob.glob('%s/*' % include)
             for file in files:
                 if os.path.isdir(file):
-                    logging.debug("adding dir %s to %s" % (file,os.path.join(self._outdir,os.path.basename(file))))
-                    shutil.copytree(file, os.path.join(self._outdir,os.path.basename(file)),symlinks=False)
+                    logging.debug("adding dir %s to %s" % (file, os.path.join(self._outdir, os.path.basename(file))))
+                    shutil.copytree(file, os.path.join(self._outdir, os.path.basename(file)), symlinks=False)
                 else:
-                    logging.debug("adding %s to %s" % (file,self._outdir))
+                    logging.debug("adding %s to %s" % (file, self._outdir))
                     shutil.copy(file, self._outdir)
         elif include:
-            logging.debug("adding %s to %s" % (include,self._outdir))
+            logging.debug("adding %s to %s" % (include, self._outdir))
             shutil.copy(include, self._outdir)
 
         #package
         (pkg, comp) = os.path.splitext(package)
         if comp:
-            comp=comp.lstrip(".")
+            comp = comp.lstrip(".")
 
         if pkg == "zip":
             dst = "%s/%s.zip" % (destdir, self.name)
@@ -573,15 +573,15 @@ class ApplianceImageCreator(ImageCreator):
                 if file != dst:
                     if os.path.isdir(file):
                         #because zip sucks we cannot just add a dir
-                         for root, dirs, dirfiles in os.walk(file):
-                             for dirfile in dirfiles:
-                                 arcfile = self.name+"/"+root[len(os.path.commonprefix((os.path.dirname(file), root)))+1:]+"/"+dirfile
-                                 filepath = os.path.join(root,dirfile)
-                                 logging.debug("adding %s to %s" % (arcfile,dst))
-                                 z.write(filepath,arcfile, compress_type=None)
+                        for root, dirs, dirfiles in os.walk(file):
+                            for dirfile in dirfiles:
+                                arcfile = self.name+"/"+root[len(os.path.commonprefix((os.path.dirname(file), root)))+1:]+"/"+dirfile
+                                filepath = os.path.join(root, dirfile)
+                                logging.debug("adding %s to %s" % (arcfile, dst))
+                                z.write(filepath, arcfile, compress_type=None)
                     else:
-                        logging.debug("adding %s to %s" % (os.path.join(self.name,os.path.basename(file)),dst))
-                        z.write(file, arcname = os.path.join(self.name,os.path.basename(file)), compress_type=None)
+                        logging.debug("adding %s to %s" % (os.path.join(self.name, os.path.basename(file)), dst))
+                        z.write(file, arcname = os.path.join(self.name, os.path.basename(file)), compress_type=None)
             z.close()
 
         elif pkg == "tar":
@@ -593,8 +593,8 @@ class ApplianceImageCreator(ImageCreator):
             logging.debug("creating %s" %  (dst))
             tar = tarfile.open(dst, "w|"+comp)
             for file in files:
-                logging.debug("adding %s to %s" % (file,dst))
-                tar.add(file, arcname = os.path.join(self.name,os.path.basename(file)))
+                logging.debug("adding %s to %s" % (file, dst))
+                tar.add(file, arcname = os.path.join(self.name, os.path.basename(file)))
             tar.close()
 
         else:
@@ -603,7 +603,7 @@ class ApplianceImageCreator(ImageCreator):
             makedirs(dst)
             for f in os.listdir(self._outdir):
                 logging.debug("moving %s to %s" % (os.path.join(self._outdir, f), os.path.join(dst, f)))
-                shutil.move(os.path.join(self._outdir, f),os.path.join(dst, f))
+                shutil.move(os.path.join(self._outdir, f), os.path.join(dst, f))
         print "Finished"
 
     def _stage_final_image(self):
@@ -628,8 +628,8 @@ class ApplianceImageCreator(ImageCreator):
 
                 src = "%s/%s-%s.%s.xz" % (self.__imgdir, self.name, name, self.__disk_format)
                 dst = "%s/%s-%s.%s.xz" % (self._outdir, self.name, name, self.__disk_format)
-                logging.debug("moving %s to %s" % (src,dst))
-                shutil.move(src,dst)
+                logging.debug("moving %s to %s" % (src, dst))
+                shutil.move(src, dst)
         #write meta data in stage dir
         self._write_image_xml()
 
@@ -640,9 +640,9 @@ class ApplianceImageCreator(ImageCreator):
             logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
             if self.__disk_format == "qcow2":
                 logging.debug("using compressed qcow2")
-                compressflag="-c"
+                compressflag = "-c"
             else:
-                compressflag=""
+                compressflag = ""
             rc = subprocess.call(["qemu-img", "convert", compressflag,
                                    "-f", "raw", self.__disks[name].lofile,
                                    "-O", self.__disk_format,  dst])
@@ -681,7 +681,7 @@ class ApplianceImageCreator(ImageCreator):
 
         i = 0
         for name in self.__disks.keys():
-            xml += "      <drive disk='%s-%s.%s' target='hd%s'/>\n" % (self.name, name, self.__disk_format,chr(ord('a')+i))
+            xml += "      <drive disk='%s-%s.%s' target='hd%s'/>\n" % (self.name, name, self.__disk_format, chr(ord('a')+i))
             i = i + 1
 
         xml += "    </boot>\n"
@@ -712,14 +712,14 @@ class ApplianceImageCreator(ImageCreator):
                     import sha
                     m1 = sha.new()
                     m2 = None
-                f = open(diskpath,"r")
+                f = open(diskpath, "r")
                 while 1:
                     chunk = f.read(65536)
                     if not chunk:
                         break
                     m1.update(chunk)
                     if m2:
-                       m2.update(chunk)
+                        m2.update(chunk)
                     meter.update(meter_ct)
                     meter_ct = meter_ct + 65536
 
