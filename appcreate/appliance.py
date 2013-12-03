@@ -375,7 +375,7 @@ class ApplianceImageCreator(ImageCreator):
         i = 0
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
-            setup += "device (hd%s) %s\n" % (i,loopdev)
+            setup += "device (hd%s) %s\n" % (i, loopdev)
             i = i + 1
         setup += "root (hd0,%d)\n" % bootdevnum
         setup += "setup --stage2=%s --prefix=%s/grub  (hd0)\n" % (stage2, prefix)
