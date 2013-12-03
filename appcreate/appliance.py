@@ -55,15 +55,15 @@ class ApplianceImageCreator(ImageCreator):
         self.__imgdir = None
         self.__disks = {}
         self.__disk_format = disk_format
-        
-        #appliance parameters 
+
+        #appliance parameters
         self.vmem = vmem
         self.vcpu = vcpu
         self.checksum = False
         self.appliance_version = None
         self.appliance_release = None
-        
-        #additional modules to include   
+
+        #additional modules to include
         self.modules = ["sym53c8xx", "aic7xxx", "mptspi"]
         self.modules.extend(kickstart.get_modules(self.ks))
 
@@ -87,37 +87,34 @@ class ApplianceImageCreator(ImageCreator):
                 'mountdev': mountdev,
                 'mountpoint': p['mountpoint'],
                 'fstype': p['fstype'] }
-
         return s
-    
-    
+
     def _create_mkinitrd_config(self):
         #write  to tell which modules to be included in initrd
-        
+
         extramods = ""
         for module in self.modules:
             extramods += '%s ' % module
-            
+
         mkinitrd = ""
         mkinitrd += "PROBE=\"no\"\n"
         mkinitrd += "MODULES=\"ext3 ata_piix sd_mod libata scsi_mod\"\n"
         mkinitrd += "MODULES=\"%s\"\n" % extramods
         mkinitrd += "rootfs=\"ext3\"\n"
         mkinitrd += "rootopts=\"defaults\"\n"
-        
+
         logging.debug("Writing mkinitrd config %s/etc/sysconfig/mkinitrd" % self._instroot)
         os.makedirs(self._instroot + "/etc/sysconfig/",mode=644)
         cfg = open(self._instroot + "/etc/sysconfig/mkinitrd", "w")
         cfg.write(mkinitrd)
         cfg.close()
-                       
-    
+
     #
     # Actual implementation
     #
     def _mount_instroot(self, base_on = None):
         self.__imgdir = self._mkdtemp()
-        
+
         #list of partitions from kickstart file
         parts = kickstart.get_partitions(self.ks)
         # need to eliminate duplicate partitions
@@ -131,7 +128,7 @@ class ApplianceImageCreator(ImageCreator):
             else:
                 mountpoints.append(mp)
         for part in toremove:
-                parts.remove(part)
+            parts.remove(part)
         #list of disks where a disk is an dict with name: and size
         disks = []
 
@@ -141,13 +138,13 @@ class ApplianceImageCreator(ImageCreator):
             else:
                 logging.debug("No --ondisk specified in partition line of ks file; assuming 'sda'")
                 disk = "sda"
-                    
-            size =   parts[i].size * 1024L * 1024L
-            
+
+            size = parts[i].size * 1024L * 1024L
+
             if len(disks) == 0:
                 disks.append({ 'name': disk, 'size': size })
             else:
-                found = 'false' 
+                found = 'false'
                 for j in range(len(disks)):
                     if disks[j]['name'] == disk:
                         disks[j]['size'] = disks[j]['size'] + size
@@ -155,9 +152,8 @@ class ApplianceImageCreator(ImageCreator):
                         break
                     else: found = 'false'
                 if found == 'false':
-                    disks.append({ 'name': disk, 'size': size })    
-            
-                        
+                    disks.append({ 'name': disk, 'size': size })
+
         #create disk
         for item in disks:
             logging.debug("Adding disk %s as %s/%s-%s.raw" % (item['name'], self.__imgdir,self.name, item['name']))
@@ -198,7 +194,7 @@ class ApplianceImageCreator(ImageCreator):
             self.__instloop.mount()
         except MountError, e:
             raise CreatorError("Failed mount disks : %s" % e)
-        
+
         self._create_mkinitrd_config()
 
     def _create_grub_devices(self, grubversion = 1):
@@ -266,13 +262,13 @@ class ApplianceImageCreator(ImageCreator):
         grub += "timeout=5\n"
         grub += "splashimage=(hd0,%d)%s/grub/splash.xpm.gz\n" % (bootdevnum, prefix)
         grub += "hiddenmenu\n"
-        
+
         versions = []
         kernels = self._get_kernel_versions()
         for kernel in kernels:
             for version in kernels[kernel]:
                 versions.append(version)
-        
+
         if int(subprocess.Popen("ls " + self._instroot + "/boot/initramfs* | wc -l", shell=True, stdout=subprocess.PIPE).communicate()[0].strip()) > 0:
             initrd = "initramfs"
         else:
@@ -375,7 +371,7 @@ class ApplianceImageCreator(ImageCreator):
 
         stage2 = "/boot/grub/stage2"
         setup = ""
-       
+
         i = 0
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
@@ -459,7 +455,7 @@ class ApplianceImageCreator(ImageCreator):
         i = 0
         for name in self.__disks.keys():
             loopdev = self.__disks[name].device
-            i =i+1
+            i = i + 1
 
         logging.debug("Installing extlinux bootloader to %s" % loopdev)
 
@@ -535,8 +531,7 @@ class ApplianceImageCreator(ImageCreator):
 
     def _resparse(self, size = None):
         return self.__instloop.resparse(size)
-    
-    
+
     def package(self, destdir,package,include):
         """Prepares the created image for final delivery.
            Stage
@@ -544,7 +539,7 @@ class ApplianceImageCreator(ImageCreator):
            package
         """
         self._stage_final_image()
-        
+
         #add stuff
         if include and os.path.isdir(include):
             logging.debug("adding everything in %s to %s" % (include,self._outdir))
@@ -559,12 +554,12 @@ class ApplianceImageCreator(ImageCreator):
         elif include:
             logging.debug("adding %s to %s" % (include,self._outdir))
             shutil.copy(include, self._outdir)
-        
+
         #package
         (pkg, comp) = os.path.splitext(package)
         if comp:
             comp=comp.lstrip(".")
-        
+
         if pkg == "zip":
             dst = "%s/%s.zip" % (destdir, self.name)
             files = glob.glob('%s/*' % self._outdir)
@@ -573,80 +568,75 @@ class ApplianceImageCreator(ImageCreator):
                 z = zipfile.ZipFile(dst, "w", compression=8, allowZip64="True")
             else:
                 logging.debug("creating %s" %  (dst))
-                z = zipfile.ZipFile(dst, "w", compression=8, allowZip64="False")    
+                z = zipfile.ZipFile(dst, "w", compression=8, allowZip64="False")
             for file in files:
                 if file != dst:
                     if os.path.isdir(file):
-                        #because zip sucks we cannot just add a dir 
+                        #because zip sucks we cannot just add a dir
                          for root, dirs, dirfiles in os.walk(file):
                              for dirfile in dirfiles:
-                                 arcfile=self.name+"/"+root[len(os.path.commonprefix((os.path.dirname(file), root)))+1:]+"/"+dirfile 
-                                 filepath=os.path.join(root,dirfile)
+                                 arcfile = self.name+"/"+root[len(os.path.commonprefix((os.path.dirname(file), root)))+1:]+"/"+dirfile
+                                 filepath = os.path.join(root,dirfile)
                                  logging.debug("adding %s to %s" % (arcfile,dst))
                                  z.write(filepath,arcfile, compress_type=None)
                     else:
                         logging.debug("adding %s to %s" % (os.path.join(self.name,os.path.basename(file)),dst))
-                        z.write(file, arcname=os.path.join(self.name,os.path.basename(file)), compress_type=None)
+                        z.write(file, arcname = os.path.join(self.name,os.path.basename(file)), compress_type=None)
             z.close()
-                     
+
         elif pkg == "tar":
             if comp:
                 dst = "%s/%s.tar.%s" % (destdir, self.name, comp)
             else:
-                dst = "%s/%s.tar" % (destdir, self.name)    
+                dst = "%s/%s.tar" % (destdir, self.name)
             files = glob.glob('%s/*' % self._outdir)
             logging.debug("creating %s" %  (dst))
             tar = tarfile.open(dst, "w|"+comp)
             for file in files:
                 logging.debug("adding %s to %s" % (file,dst))
-                tar.add(file, arcname=os.path.join(self.name,os.path.basename(file)))
+                tar.add(file, arcname = os.path.join(self.name,os.path.basename(file)))
             tar.close()
 
-               
         else:
             dst = os.path.join(destdir, self.name)
             logging.debug("creating destination dir: " + dst)
             makedirs(dst)
             for f in os.listdir(self._outdir):
                 logging.debug("moving %s to %s" % (os.path.join(self._outdir, f), os.path.join(dst, f)))
-                shutil.move(os.path.join(self._outdir, f),os.path.join(dst, f))        
+                shutil.move(os.path.join(self._outdir, f),os.path.join(dst, f))
         print "Finished"
-        
-        
-        
+
     def _stage_final_image(self):
         """Stage the final system image in _outdir.
            Convert disks
            write meta data
         """
         self._resparse()
-        
-        #if disk_format is not raw convert the disk and put in _outdir     
+
+        #if disk_format is not raw convert the disk and put in _outdir
         if self.__disk_format != "raw":
             self._convert_image()
-        #else move to _outdir    
+        #else move to _outdir
         else:
             logging.debug("moving disks to stage location")
             for name in self.__disks.keys():
-                rc = subprocess.call(["xz", "-z", "%s/%s-%s.%s" %(self.__imgdir, self.name,name, self.__disk_format)])
+                rc = subprocess.call(["xz", "-z", "%s/%s-%s.%s" %(self.__imgdir, self.name, name, self.__disk_format)])
                 if rc == 0:
                     logging.debug("compression successful")
                 if rc != 0:
                     raise CreatorError("Unable to compress disk to %s" % self.__disk_format)
 
-                src = "%s/%s-%s.%s.xz" % (self.__imgdir, self.name,name, self.__disk_format)
-                dst = "%s/%s-%s.%s.xz" % (self._outdir, self.name,name, self.__disk_format)
+                src = "%s/%s-%s.%s.xz" % (self.__imgdir, self.name, name, self.__disk_format)
+                dst = "%s/%s-%s.%s.xz" % (self._outdir, self.name, name, self.__disk_format)
                 logging.debug("moving %s to %s" % (src,dst))
                 shutil.move(src,dst)
         #write meta data in stage dir
-        self._write_image_xml()    
+        self._write_image_xml()
 
-    
-        
     def _convert_image(self):
         #convert disk format
         for name in self.__disks.keys():
-            dst = "%s/%s-%s.%s" % (self._outdir, self.name,name, self.__disk_format)       
+            dst = "%s/%s-%s.%s" % (self._outdir, self.name, name, self.__disk_format)
             logging.debug("converting %s image to %s" % (self.__disks[name].lofile, dst))
             if self.__disk_format == "qcow2":
                 logging.debug("using compressed qcow2")
@@ -664,7 +654,7 @@ class ApplianceImageCreator(ImageCreator):
     def _write_kickstart(self):
         #write out the kicks tart to /root/anaconda-ks.cfg
         ks = open(self._instroot + "/root/anaconda-ks.cfg", "w")
-        ks.write("%s" %(self.ks.handler,))
+        ks.write("%s" % (self.ks.handler,))
         ks.close()
 
 
@@ -691,14 +681,14 @@ class ApplianceImageCreator(ImageCreator):
 
         i = 0
         for name in self.__disks.keys():
-            xml += "      <drive disk='%s-%s.%s' target='hd%s'/>\n" % (self.name,name, self.__disk_format,chr(ord('a')+i))
+            xml += "      <drive disk='%s-%s.%s' target='hd%s'/>\n" % (self.name, name, self.__disk_format,chr(ord('a')+i))
             i = i + 1
-            
+
         xml += "    </boot>\n"
         xml += "    <devices>\n"
-        xml += "      <vcpu>%s</vcpu>\n" % self.vcpu 
-        xml += "      <memory>%d</memory>\n" %(self.vmem * 1024)
-        for network in self.ks.handler.network.network: 
+        xml += "      <vcpu>%s</vcpu>\n" % self.vcpu
+        xml += "      <memory>%d</memory>\n" % (self.vmem * 1024)
+        for network in self.ks.handler.network.network:
             xml += "      <interface/>\n"
         xml += "      <graphics/>\n"
         xml += "    </devices>\n"
@@ -707,12 +697,12 @@ class ApplianceImageCreator(ImageCreator):
 
         if self.checksum is True:
             for name in self.__disks.keys():
-                diskpath = "%s/%s-%s.%s" % (self._outdir,self.name,name, self.__disk_format)
+                diskpath = "%s/%s-%s.%s" % (self._outdir, self.name, name, self.__disk_format)
                 disk_size = os.path.getsize(diskpath)
                 meter_ct = 0
                 meter = progress.TextMeter()
-                meter.start(size=disk_size, text="Generating disk signature for %s-%s.%s" % (self.name,name,self.__disk_format))
-                xml += "    <disk file='%s-%s.%s' use='system' format='%s'>\n" % (self.name,name, self.__disk_format, self.__disk_format)
+                meter.start(size=disk_size, text="Generating disk signature for %s-%s.%s" % (self.name, name, self.__disk_format))
+                xml += "    <disk file='%s-%s.%s' use='system' format='%s'>\n" % (self.name, name, self.__disk_format, self.__disk_format)
 
                 try:
                     import hashlib
@@ -742,7 +732,7 @@ class ApplianceImageCreator(ImageCreator):
                 xml += "    </disk>\n"
         else:
             for name in self.__disks.keys():
-                xml += "    <disk file='%s-%s.%s' use='system' format='%s'/>\n" % (self.name,name, self.__disk_format, self.__disk_format)
+                xml += "    <disk file='%s-%s.%s' use='system' format='%s'/>\n" % (self.name, name, self.__disk_format, self.__disk_format)
 
         xml += "  </storage>\n"
         xml += "</image>\n"
@@ -752,7 +742,4 @@ class ApplianceImageCreator(ImageCreator):
         cfg.write(xml)
         cfg.close()
         #print "Wrote: %s.xml" % self.name
-                
-
-
 
