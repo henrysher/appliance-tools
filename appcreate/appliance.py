@@ -167,8 +167,10 @@ class ApplianceImageCreator(ImageCreator):
         partition_layout = 'msdos'
         # check for extlinux in kickstart then grub2 and falling back to grub
         if hasattr(self.ks.handler.bootloader, "extlinux"):
-            if 'syslinux-extlinux' or 'extlinux-bootloader' in packages:
+            if 'syslinux-extlinux' in packages:
                 self.bootloader = 'extlinux'
+            elif 'extlinux-bootloader' in packages:
+                self.bootloader = 'extlinux-bootloader'
             else:
                 logging.warning("WARNING! syslinux-extlinux package not found.")
         else:
@@ -336,6 +338,8 @@ class ApplianceImageCreator(ImageCreator):
             extlinux += "label %s (%s)\n" % (self.name, v)
             extlinux += "\tkernel %s/vmlinuz-%s\n" % (prefix, v)
             extlinux += "\tappend ro root=%s %s\n" % (rootdev, options)
+            if 'extlinux-bootloader' in packages:
+                extlinux += "\tfdtdir %s/dtb-%s/\n" % (prefix, v)
             extlinux += "\tinitrd %s/%s-%s.img\n\n" % (prefix, initrd, v)
 
 
@@ -521,6 +525,9 @@ class ApplianceImageCreator(ImageCreator):
             logging.debug("Using EXTLINUX.")
             self._create_extlinux_config()
             self._install_extlinux()
+        elif self.bootloader == 'extlinux-bootloader':
+            logging.debug("Using EXTLINUX from extlinux-bootloader package.")
+            self._create_extlinux_config()
         else:
             # No GRUB package is available
             logging.warning("WARNING! No bootloader found.")
