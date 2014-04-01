@@ -19,7 +19,6 @@ man:
 	pod2man --section=8 --release="appliance-tools $(VERSION)" --center "Appliance Tools" docs/ec2-converter.pod > docs/ec2-converter.8
 install: man
 	$(INSTALL_PROGRAM) -D tools/appliance-creator $(DESTDIR)/usr/bin/appliance-creator
-	$(INSTALL_PROGRAM) -D tools/image-minimizer $(DESTDIR)/usr/bin/image-minimizer
 	$(INSTALL_PROGRAM) -D tools/ec2-converter $(DESTDIR)/usr/bin/ec2-converter
 	$(INSTALL_DATA) -D README $(DESTDIR)/usr/share/doc/appliance-tools/README
 	$(INSTALL_DATA) -D COPYING $(DESTDIR)/usr/share/doc/appliance-tools/COPYING
@@ -35,7 +34,6 @@ install: man
 
 uninstall:
 	rm -f $(DESTDIR)/usr/bin/appliance-creator
-	rm -f $(DESTDIR)/usr/bin/image-minimizer
 	rm -f $(DESTDIR)/usr/bin/ec2-converter
 	rm -rf $(DESTDIR)/usr/lib/appliance-creator
 	rm -rf $(DESTDIR)/usr/share/doc/appliance-tools-$(VERSION)
