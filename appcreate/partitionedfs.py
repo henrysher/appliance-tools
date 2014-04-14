@@ -108,7 +108,7 @@ class PartitionedMount(Mount):
                 fstype = 'ext2'
             if p['fstype'] == 'vfat':
                 fstype = 'fat32'
-            rc = subprocess.call(["/sbin/parted", "-a", "cyl", "-s", d['disk'].device, "mkpart",
+            rc = subprocess.call(["/sbin/parted", "-a", "opt", "-s", d['disk'].device, "mkpart",
                                   p['type'], fstype, "%dM" % p['start'], "%dM" % (p['start']+p['size'])])
 
             # XXX disabled return code check because parted always fails to
