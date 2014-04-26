@@ -322,7 +322,7 @@ class ApplianceImageCreator(ImageCreator):
         extlinux += "menu autoboot Welcome to %s. Automatic boot in # second{,s}. Press a key for options.\n" % (self.name)
         extlinux += "menu title %s Boot Options.\n" % (self.name)
         extlinux += "menu hidden\n"
-        extlinux += "timeout 1\n"
+        extlinux += "timeout 20\n"
         extlinux += "totaltimeout 600\n\n"
 
         versions = []
